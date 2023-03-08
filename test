@@ -1,0 +1,25 @@
+#!/bin/zsh
+
+assert() {
+       if [[ "$2" != "$3" ]]; then
+       	   echo "Failure: $1\n\tExpected: $3\n\tReceived: $2"
+	   ERR=1
+       fi
+}
+
+function teardown() {
+    cd "$DIR"
+    #rm -rf "$DIR
+}
+
+KB=$(realpath ./kb)
+DIR=$(mktemp -d)
+trap "rm -rf $DIR" EXIT
+cd "$DIR"
+
+assert 'bad file structure' "$($KB ingest 2>&1)" 'kb directory structure not detected. Use "kb init" to create a new directory structure.'
+
+[[ -z "$ERR" ]] && echo "All Tests Pass"
+exit "$ERR"
+
+

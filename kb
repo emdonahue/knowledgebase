@@ -1,0 +1,38 @@
+#!/bin/zsh
+
+set -o errexit
+set -o pipefail
+if [[ "${TRACE-0}" == "1" ]]; then set -o xtrace; fi
+
+unset c #Reserved variable for inline comments
+
+DIRS=(inbox raw text notes)
+
+CMD="$1"
+
+# Ensure proper directory structure
+case "$CMD" in
+    -h|--help|help|init);;
+    *)
+	for f in "${DIRS[@]}"; do
+	    [[ -d "$f" ]] || echo 'kb directory structure not detected. Use "kb init" to create a new directory structure.' >&1 && exit 1
+	done
+	;;
+esac
+
+[[ $# -ne 0 ]] && shift
+case "$CMD" in
+    --help|-h|help) #[SUBCOMMAND]; Prints help text for SUBCOMMAND. If SUBCOMMAND omitted, prints list of subcommands.
+	[[ $# -eq 0 ]] && echo 'kb - Personal KnowledgeBase utility for organizing and searching PDFs, other text-based media, notes, etc.\nUsage: kb SUBCOMMAND [ARGUMENTS...]\n\nSubcommands:'
+	sed -nE '/\s*'"$1"'\)\s#/'"${1:+,/^\s*;;\s*$/}"'{s/^[[:space:]]*([-|[:alnum:]]+)\)\s#([^;]*); (.*)/'"${${1-\t}:#$1}"'\1 \2\t\3/p; s/.*(\w+)[-+:]*=\w+ \$\{c#(.*); (.*)\}.*/\t-\1 \2\t\3/p}' "$0"
+	;;
+
+    ingest) #; Consumes files in inbox and generates appropriate archival copies, analysis extracts, and metadata containers.
+	
+	;;
+    
+    init) #; Generates a new directory structure for use by kb in the current directory.
+	mkdir -p "${DIRS[@]}"
+	;;
+    
+esac
