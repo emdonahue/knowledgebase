@@ -36,7 +36,7 @@ $KB ingest
 [[ -f bib/$AMD5.bib ]] || assert 'ingest bib a'
 [[ -f bib/$BMD5.bib ]] || assert 'ingest bib b'
 [[ -f notes/$AMD5.org ]] || assert 'ingest org a'
-assert 'ingest org link' "$(head -n1 notes/$AMD5.org)" '[file:../md5/'"$AMD5"'.pdf][link]'
+assert 'ingest org link' "$(head -n1 notes/$AMD5.org)" '[file:../md5/'"$AMD5"'.pdf][a]'
 [[ -f notes/$BMD5.org ]] || assert 'ingest org b'
 assert 'ingest title' "$(cat bib/$AMD5.bib)" "$(echo 'title\ta')"
 

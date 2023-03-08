@@ -39,9 +39,8 @@ case "$CMD" in
 	find inbox -type f -print0 | while read -d$'\0' f; do
 	    INGEST_MD5=$(md5sum "$f" | cut -f1 -d' ')
 	    mv "$f" "md5/$INGEST_MD5.$f:e"
-	    #{echo "[file:$(realpath $f)][link]" > "notes/$INGEST_MD5.org"} 2>/dev/null
 	    [[ ! -f "bib/$INGEST_MD5.bib" ]] && echo 'title\t'"$f:t:r" > "bib/$INGEST_MD5.bib"
-	    [[ ! -f "notes/$INGEST_MD5.org" ]] && echo '[file:../md5/'"$INGEST_MD5"'.'"$f:e"'][link]' > "notes/$INGEST_MD5.org"
+	    [[ ! -f "notes/$INGEST_MD5.org" ]] && echo '[file:../md5/'"$INGEST_MD5"'.'"$f:e"']['"$f:t:r"']' > "notes/$INGEST_MD5.org"
 	done
 	;;
     
@@ -59,7 +58,8 @@ case "$CMD" in
 	#select opt in ${(f)"$(grep -EZriH '^title.*'"$1" bib)"}; do
 	#    echo $opt
 	#done
-	emacsclient -tc notes/$(disambiguate ${(f)"$(grep -EZriH '^title'$'\t''.*'"$1" bib | sed -E 's|bib/(.*)\.bib\x00title\t(.*)|\2\t\1|')"}).org
+	#disambiguate ${(f)"$(grep -EZriH '^title'$'\t''.*'"$1" bib | sed -E 's|bib/(.*)\.bib\x00title\t(.*)|\2\t\1|')"} | sed -E 's/.*\t([^\t]+)$/\1/'
+	${=EDITOR} notes/$(disambiguate ${(f)"$(grep -EZriH '^title'$'\t''.*'"$1" bib | sed -E 's|bib/(.*)\.bib\x00title\t(.*)|\2\t\1|')"} | sed -E 's/.*\t([^\t]+)$/\1/').org
 	;;
     
     *)	
