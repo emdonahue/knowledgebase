@@ -33,12 +33,16 @@ case "$CMD" in
 	    INGEST_MD5=$(md5sum "$f" | cut -f1 -d' ')
 	    mv "$f" "md5/$INGEST_MD5.$f:e"
 	    #{echo "[file:$(realpath $f)][link]" > "notes/$INGEST_MD5.org"} 2>/dev/null
-	    {echo "title\t$f:t:r" > "bib/$INGEST_MD5.bib"} 2>/dev/null
+	    {echo 'title\t'"$f:t:r" > "bib/$INGEST_MD5.bib"} 2>/dev/null
 	done
 	;;
     
     init) #; Generates a new directory structure for use by kb in the current directory.
 	mkdir -p "${DIRS[@]}"
+	;;
+
+    ls) #; Lists files, newest first.
+	ls -t md5 | sed 's/\..*$/.bib/;s|^|bib/|' | xargs grep -sE '^title' | cut -d$'\t' -f1 --complement
 	;;
     
     *)	
