@@ -15,7 +15,7 @@ case "$CMD" in
     -h|--help|help|init);;
     *)
 	for f in "${DIRS[@]}"; do
-	    [[ -d "$f" ]] || echo 'kb directory structure not detected. Use "kb init" to create a new directory structure.' >&1 && exit 1
+	    [[ -d "$f" ]] || {echo 'kb directory structure not detected. Use "kb init" to create a new directory structure.' >&1; exit 1}
 	done
 	;;
 esac
@@ -28,11 +28,16 @@ case "$CMD" in
 	;;
 
     ingest) #; Consumes files in inbox and generates appropriate archival copies, analysis extracts, and metadata containers.
-	
+	find inbox -type f -print0 | while read -d$'\0' f; do
+	    mv "$f" "raw/$(md5sum "$f" | cut -f1 -d' ').$f:t:e"
+	done
 	;;
     
     init) #; Generates a new directory structure for use by kb in the current directory.
 	mkdir -p "${DIRS[@]}"
 	;;
-    
+    *)	
+	"$0" help 1>&2
+	exit 1
+	;;
 esac

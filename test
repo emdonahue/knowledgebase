@@ -1,16 +1,20 @@
 #!/bin/zsh
 
 assert() {
-       if [[ "$2" != "$3" ]]; then
-       	   echo "Failure: $1\n\tExpected: $3\n\tReceived: $2"
-	   ERR=1
-       fi
+    if [[ $# == 1 || "$2" != "$3" ]]; then
+	echo "Failure: $1"
+	ERR=1
+	if [[ "$2" != "$3" ]]; then echo "\tExpected: $3\n\tReceived: $2"; fi
+    fi
 }
 
 function teardown() {
     cd "$DIR"
-    #rm -rf "$DIR
+    rm -rf inbox raw text notes
 }
+
+AMD5=$(md5sum <<< 'a' | cut -f1 -d' ')
+BMD5=$(md5sum <<< 'b' | cut -f1 -d' ')
 
 KB=$(realpath ./kb)
 DIR=$(mktemp -d)
@@ -19,7 +23,15 @@ cd "$DIR"
 
 assert 'bad file structure' "$($KB ingest 2>&1)" 'kb directory structure not detected. Use "kb init" to create a new directory structure.'
 
+$KB init
+echo -n 'a' > inbox/a.pdf
+echo -n 'b' > inbox/b.txt
+$KB ingest
+[[ -f inbox/a.pdf ]] && assert 'ingest did not remove a.pdf'
+[[ -f inbox/b.txt ]] && assert 'ingest did not remove b.txt'
+[[ -f raw/$AMD5.pdf ]] && assert 'ingest did not create a.pdf'
+[[ -f raw/$BMD5.txt ]] && assert 'ingest did not create b.txt'
+teardown
+
 [[ -z "$ERR" ]] && echo "All Tests Pass"
 exit "$ERR"
-
-
