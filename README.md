@@ -13,5 +13,6 @@ Subcommands:
 	ingest 	Consumes files in inbox and generates appropriate archival copies, analysis extracts, and metadata containers.
 	init 	Generates a new directory structure for use by kb in the current directory.
 	ls 	Lists files, newest first.
+	notes SEARCH	Opens the notes file for the document with title matching the SEARCH term using $EDITOR.
 ```
 ## TODO
