@@ -10,7 +10,7 @@ assert() {
 
 function teardown() {
     cd "$DIR"
-    rm -rf inbox raw text notes
+    rm -rf inbox md5 text notes bib
 }
 
 AMD5=$(md5sum <<< 'a' | cut -f1 -d' ')
@@ -24,13 +24,16 @@ cd "$DIR"
 assert 'bad file structure' "$($KB ingest 2>&1)" 'kb directory structure not detected. Use "kb init" to create a new directory structure.'
 
 $KB init
-echo -n 'a' > inbox/a.pdf
-echo -n 'b' > inbox/b.txt
+echo 'a' > inbox/a.pdf
+echo 'b' > inbox/b.txt
 $KB ingest
-[[ -f inbox/a.pdf ]] && assert 'ingest did not remove a.pdf'
-[[ -f inbox/b.txt ]] && assert 'ingest did not remove b.txt'
-[[ -f raw/$AMD5.pdf ]] && assert 'ingest did not create a.pdf'
-[[ -f raw/$BMD5.txt ]] && assert 'ingest did not create b.txt'
+[[ -f inbox/a.pdf ]] && assert 'ingest inbox a'
+[[ -f inbox/b.txt ]] && assert 'ingest inbox b'
+[[ -f md5/$AMD5.pdf ]] || assert 'ingest m5d a'
+[[ -f md5/$BMD5.txt ]] || assert 'ingest m5d b  '
+[[ -f bib/$AMD5.bib ]] || assert 'ingest bib a'
+[[ -f bib/$BMD5.bib ]] || assert 'ingest bib b'
+assert 'ingest title' "$(cat bib/$AMD5.bib)" "$(echo 'title\ta')"
 teardown
 
 [[ -z "$ERR" ]] && echo "All Tests Pass"

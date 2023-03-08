@@ -4,9 +4,10 @@ set -o errexit
 set -o pipefail
 if [[ "${TRACE-0}" == "1" ]]; then set -o xtrace; fi
 
+set -o noclobber
 unset c #Reserved variable for inline comments
 
-DIRS=(inbox raw text notes)
+DIRS=(inbox md5 text bib notes)
 
 CMD="$1"
 
@@ -29,13 +30,17 @@ case "$CMD" in
 
     ingest) #; Consumes files in inbox and generates appropriate archival copies, analysis extracts, and metadata containers.
 	find inbox -type f -print0 | while read -d$'\0' f; do
-	    mv "$f" "raw/$(md5sum "$f" | cut -f1 -d' ').$f:t:e"
+	    INGEST_MD5=$(md5sum "$f" | cut -f1 -d' ')
+	    mv "$f" "md5/$INGEST_MD5.$f:e"
+	    #{echo "[file:$(realpath $f)][link]" > "notes/$INGEST_MD5.org"} 2>/dev/null
+	    {echo "title\t$f:t:r" > "bib/$INGEST_MD5.bib"} 2>/dev/null
 	done
 	;;
     
     init) #; Generates a new directory structure for use by kb in the current directory.
 	mkdir -p "${DIRS[@]}"
 	;;
+    
     *)	
 	"$0" help 1>&2
 	exit 1
