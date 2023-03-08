@@ -12,5 +12,6 @@ Subcommands:
 	--help|-h|help [SUBCOMMAND]	Prints help text for SUBCOMMAND. If SUBCOMMAND omitted, prints list of subcommands.
 	ingest 	Consumes files in inbox and generates appropriate archival copies, analysis extracts, and metadata containers.
 	init 	Generates a new directory structure for use by kb in the current directory.
+	ls 	Lists files, newest first.
 ```
 ## TODO
