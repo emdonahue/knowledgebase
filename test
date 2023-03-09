@@ -26,6 +26,7 @@ assert 'bad file structure' "$($KB ingest 2>&1)" 'kb directory structure not det
 $KB init
 echo 'a' > inbox/a.pdf
 echo 'b' > inbox/b.txt
+echo 'z' > md5/$AMD5.pdf
 
 #ingest
 $KB ingest
@@ -36,7 +37,7 @@ $KB ingest
 [[ -f bib/$AMD5.bib ]] || assert 'ingest bib a'
 [[ -f bib/$BMD5.bib ]] || assert 'ingest bib b'
 [[ -f notes/$AMD5.org ]] || assert 'ingest org a'
-assert 'ingest org link' "$(head -n1 notes/$AMD5.org)" '[file:../md5/'"$AMD5"'.pdf][a]'
+assert 'ingest org link' "$(head -n1 notes/$AMD5.org)" '[[file:../md5/'"$AMD5"'.pdf][a]]'
 [[ -f notes/$BMD5.org ]] || assert 'ingest org b'
 assert 'ingest title' "$(cat bib/$AMD5.bib)" "$(echo 'title\ta')"
 

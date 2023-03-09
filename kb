@@ -10,6 +10,7 @@ unset c #Reserved variable for inline comments
 DIRS=(inbox md5 text bib notes)
 
 function disambiguate() {
+    local PS3='Type a number to disambiguate: '
     [[ $# == 1 ]] && echo "$1" && return
     select opt; do
 	[[ $REPLY -le $# ]] && echo "$opt" && break
@@ -40,7 +41,7 @@ case "$CMD" in
 	    INGEST_MD5=$(md5sum "$f" | cut -f1 -d' ')
 	    mv "$f" "md5/$INGEST_MD5.$f:e"
 	    [[ ! -f "bib/$INGEST_MD5.bib" ]] && echo 'title\t'"$f:t:r" > "bib/$INGEST_MD5.bib"
-	    [[ ! -f "notes/$INGEST_MD5.org" ]] && echo '[file:../md5/'"$INGEST_MD5"'.'"$f:e"']['"$f:t:r"']' > "notes/$INGEST_MD5.org"
+	    [[ ! -f "notes/$INGEST_MD5.org" ]] && echo '[[file:../md5/'"$INGEST_MD5"'.'"$f:e"']['"$f:t:r"']]' > "notes/$INGEST_MD5.org"
 	done
 	;;
     
@@ -52,13 +53,7 @@ case "$CMD" in
 	ls -t md5 | sed 's/\..*$/.bib/;s|^|bib/|' | xargs grep -sE '^title' | cut -d$'\t' -f1 --complement
 	;;
 
-    notes) #SEARCH; Opens the notes file for the document with title matching the SEARCH term using $EDITOR.
-	#NOTES_OPTS=(${(f)"$(grep -EZriH '^title.*'"$1" bib)"})
-	#echo $(disambiguate "${NOTES_OPTS[@]}")
-	#select opt in ${(f)"$(grep -EZriH '^title.*'"$1" bib)"}; do
-	#    echo $opt
-	#done
-	#disambiguate ${(f)"$(grep -EZriH '^title'$'\t''.*'"$1" bib | sed -E 's|bib/(.*)\.bib\x00title\t(.*)|\2\t\1|')"} | sed -E 's/.*\t([^\t]+)$/\1/'
+    notes) #SEARCH; Opens the notes file for the document with title matching the SEARCH term using $EDITOR.	
 	${=EDITOR} notes/$(disambiguate ${(f)"$(grep -EZriH '^title'$'\t''.*'"$1" bib | sed -E 's|bib/(.*)\.bib\x00title\t(.*)|\2\t\1|')"} | sed -E 's/.*\t([^\t]+)$/\1/').org
 	;;
     
