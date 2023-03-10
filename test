@@ -46,7 +46,7 @@ assert 'md5' "$($KB md5)" "$(echo "$BMD5\n$AMD5")"
 assert 'md5 search wildcard' "$($KB md5 a)" "$(echo "$AMD5")"
 
 #ls
-#assert 'ls' "$($KB ls)" "$(echo 'b\na')"
+assert 'ls' "$($KB ls)" "$(echo 'b\na')"
 
 
 
