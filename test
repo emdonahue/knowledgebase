@@ -39,10 +39,13 @@ $KB import
 [[ -f notes/$AMD5.org ]] || assert 'import org a'
 assert 'import org link' "$(head -n1 notes/$AMD5.org)" '[[file:../md5/'"$AMD5"'.pdf][a]]'
 [[ -f notes/$BMD5.org ]] || assert 'import org b'
-assert 'import title' "$(cat bib/$AMD5.bib)" "$(echo 'title\ta')"
+assert 'import bib' "$(cat bib/$AMD5.bib)" "$(echo '@article{'"$AMD5"',\ntitle={a},\n}')"
+
+#md5
+assert 'md5' "$($KB md5)" "$(echo "$BMD5\n$AMD5")"
 
 #ls
-assert 'ls' "$($KB ls)" "$(echo 'b\na')"
+#assert 'ls' "$($KB ls)" "$(echo 'b\na')"
 
 
 

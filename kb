@@ -1,7 +1,5 @@
 #!/bin/zsh
 
-#TODO make the notes search consume the whole search string
-#TODO add editor for metadata
 #TODO enable searching by keyword
 #TODO add easy metadata editing shortcuts
 
@@ -20,6 +18,16 @@ function disambiguate() {
     select opt; do
 	[[ $REPLY -le $# ]] && echo "$opt" && break
     done
+}
+
+function disambiguate_md5() { # Accepts md5s or filenames based on md5s and presents a formatted select, returning a single md5
+    #disambiguate ${(f)
+    sed -nE 's/^title=\{(.*)\},/\1/p' bib/${^${(@f)$(< /dev/stdin):t:r}}.bib
+    #local x=(bib/${^${(@f)$(< /dev/stdin):t:r}}.bib)
+}
+
+function search() {
+    xargs -0 -I{} grep -Eril -e '^@\w+\{'"$*"'\,$' -e '^ *\w+={.*'"$*"'.*}, *' bib/{}.bib | sed -E 's_^bib/(.*)\.bib$_\1_'
 }
 
 CMD="$1"
@@ -41,11 +49,16 @@ case "$CMD" in
 	sed -nE '/\s*'"$1"'\)\s#/'"${1:+,/^\s*;;\s*$/}"'{s/^[[:space:]]*([-|[:alnum:]]+)\)\s#([^;]*); (.*)/'"${${1-\t}:#$1}"'\1 \2\t\3/p; s/.*(\w+)[-+:]*=\w+ \$\{c#(.*); (.*)\}.*/\t-\1 \2\t\3/p}' "$0"
 	;;
 
+    bib) #SEARCH; Opens the bibliography file with title matching SEARCH term using $EDITOR.
+	grep -Eril '^ *\w+={.*'"$*.*}, *" bib | disambiguate_md5
+	#${=EDITOR} bib/$(disambiguate ${(f)"$(grep -EZriH '^title={.*'"$*}," bib | sed -E 's|bib/(.*)\.bib\x00title\t(.*)|\2\t\1|')"} | sed -E 's/.*\t([^\t]+)$/\1/').bib
+	;;
+    
     import) #; Consumes files in inbox and generates appropriate archival copies, analysis extracts, and metadata containers.
 	find inbox -type f -print0 | while read -d$'\0' f; do
 	    IMPORT_MD5=$(md5sum "$f" | cut -f1 -d' ')
 	    mv "$f" "md5/$IMPORT_MD5.$f:e"
-	    [[ ! -f "bib/$IMPORT_MD5.bib" ]] && echo 'title\t'"$f:t:r" > "bib/$IMPORT_MD5.bib"
+	    [[ ! -f "bib/$IMPORT_MD5.bib" ]] && echo '@article{'"$IMPORT_MD5"',\ntitle={'"$f:t:r"'},\n}' > "bib/$IMPORT_MD5.bib"
 	    [[ ! -f "notes/$IMPORT_MD5.org" ]] && echo '[[file:../md5/'"$IMPORT_MD5"'.'"$f:e"']['"$f:t:r"']]' > "notes/$IMPORT_MD5.org"
 	done
 	;;
@@ -58,8 +71,12 @@ case "$CMD" in
 	ls -t md5 | sed 's/\..*$/.bib/;s|^|bib/|' | xargs grep -sE '^title' | cut -d$'\t' -f1 --complement
 	;;
 
+    md5) #SEARCH; Searches metadata and fulltext and returns a list of md5's for computational processing.
+	ls -t -1 md5 | sed 's/\..*$//' | tr '\n' '\0' | search "$@"
+	;;
+    
     notes) #SEARCH; Opens the notes file for the document with title matching the SEARCH term using $EDITOR.	
-	${=EDITOR} notes/$(disambiguate ${(f)"$(grep -EZriH '^title'$'\t''.*'"$1" bib | sed -E 's|bib/(.*)\.bib\x00title\t(.*)|\2\t\1|')"} | sed -E 's/.*\t([^\t]+)$/\1/').org
+	${=EDITOR} notes/$(disambiguate ${(f)"$(grep -EZriH '^title'$'\t''.*'"$*" bib | sed -E 's|bib/(.*)\.bib\x00title\t(.*)|\2\t\1|')"} | sed -E 's/.*\t([^\t]+)$/\1/').org
 	;;
     
     *)	
