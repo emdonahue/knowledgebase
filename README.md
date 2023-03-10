@@ -10,9 +10,13 @@ Usage: kb SUBCOMMAND [ARGUMENTS...]
 
 Subcommands:
 	--help|-h|help [SUBCOMMAND]	Prints help text for SUBCOMMAND. If SUBCOMMAND omitted, prints list of subcommands.
-	ingest 	Consumes files in inbox and generates appropriate archival copies, analysis extracts, and metadata containers.
+	import 	Consumes files in inbox and generates appropriate archival copies, analysis extracts, and metadata containers.
 	init 	Generates a new directory structure for use by kb in the current directory.
 	ls 	Lists files, newest first.
-	notes SEARCH	Opens the notes file for the document with title matching the SEARCH term using $EDITOR.
+	notes SEARCH	Opens the notes file for the document with title matching the SEARCH term using $EDITOR.	
 ```
 ## TODO
+- make the notes search consume the whole search string
+- add editor for metadata
+- enable searching by keyword
+- add easy metadata editing shortcuts

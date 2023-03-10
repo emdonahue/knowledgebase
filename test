@@ -21,25 +21,25 @@ DIR=$(mktemp -d)
 trap "rm -rf $DIR" EXIT
 cd "$DIR"
 
-assert 'bad file structure' "$($KB ingest 2>&1)" 'kb directory structure not detected. Use "kb init" to create a new directory structure.'
+assert 'bad file structure' "$($KB import 2>&1)" 'kb directory structure not detected. Use "kb init" to create a new directory structure.'
 
 $KB init
 echo 'a' > inbox/a.pdf
 echo 'b' > inbox/b.txt
 echo 'z' > md5/$AMD5.pdf
 
-#ingest
-$KB ingest
-[[ -f inbox/a.pdf ]] && assert 'ingest inbox a'
-[[ -f inbox/b.txt ]] && assert 'ingest inbox b'
-[[ -f md5/$AMD5.pdf ]] || assert 'ingest m5d a'
-[[ -f md5/$BMD5.txt ]] || assert 'ingest m5d b  '
-[[ -f bib/$AMD5.bib ]] || assert 'ingest bib a'
-[[ -f bib/$BMD5.bib ]] || assert 'ingest bib b'
-[[ -f notes/$AMD5.org ]] || assert 'ingest org a'
-assert 'ingest org link' "$(head -n1 notes/$AMD5.org)" '[[file:../md5/'"$AMD5"'.pdf][a]]'
-[[ -f notes/$BMD5.org ]] || assert 'ingest org b'
-assert 'ingest title' "$(cat bib/$AMD5.bib)" "$(echo 'title\ta')"
+#import
+$KB import
+[[ -f inbox/a.pdf ]] && assert 'import inbox a'
+[[ -f inbox/b.txt ]] && assert 'import inbox b'
+[[ -f md5/$AMD5.pdf ]] || assert 'import m5d a'
+[[ -f md5/$BMD5.txt ]] || assert 'import m5d b  '
+[[ -f bib/$AMD5.bib ]] || assert 'import bib a'
+[[ -f bib/$BMD5.bib ]] || assert 'import bib b'
+[[ -f notes/$AMD5.org ]] || assert 'import org a'
+assert 'import org link' "$(head -n1 notes/$AMD5.org)" '[[file:../md5/'"$AMD5"'.pdf][a]]'
+[[ -f notes/$BMD5.org ]] || assert 'import org b'
+assert 'import title' "$(cat bib/$AMD5.bib)" "$(echo 'title\ta')"
 
 #ls
 assert 'ls' "$($KB ls)" "$(echo 'b\na')"
