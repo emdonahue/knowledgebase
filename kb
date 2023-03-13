@@ -2,6 +2,9 @@
 
 #TODO enable searching by keyword
 #TODO add easy metadata editing shortcuts
+#TODO test interactive editor programs by substituting EDITOR with echo
+#TODO add ls sorting based on note modification time
+#TODO automatically fix formatting on bibtex files after editing, including missing files
 
 set -o errexit
 set -o pipefail
@@ -27,7 +30,7 @@ function disambiguate_md5() { # Accepts md5s or filenames based on md5s and pres
 }
 
 function search() {
-    xargs -0 -I{} grep -Eil -e '^@\w+\{'"$*"'\,$' -e '^ *\w+={.*'"$*"'.*}, *' bib/{}.bib | sed -E 's_^bib/(.*)\.bib$_\1_'
+    xargs -d\\n -I{} grep -Eil -e '^@\w+\{'"$*"'\,$' -e '^ *\w+={.*'"$*"'.*}, *' bib/{}.bib | sed -E 's_^bib/(.*)\.bib$_\1_'
 }
 
 CMD="$1"
@@ -37,7 +40,7 @@ case "$CMD" in
     -h|--help|help|init);;
     *)
 	for f in "${DIRS[@]}"; do
-	    [[ -d "$f" ]] || {echo 'kb directory structure not detected. Use "kb init" to create a new directory structure.' >&1; exit 1}
+	    [[ -d "$f" ]] || {echo 'kb directory structure not detected. Use "kb init" to create a new directory structure.' >&2; exit 1}
 	done
 	;;
 esac
@@ -72,8 +75,16 @@ case "$CMD" in
 	"$0" md5 "$@" | xargs -d\\n -I{} sed -nE 's/^title=\{(.*)\},$/\1/p' bib/{}.bib
 	;;
 
-    md5) #[OPTION]... SEARCH; Searches for files matching SEARCH string and prints a list of md5's for further processing. SEARCH is matched against all bibtex fields and the md5 hash itself. Use options to limit the bibtex search or search notes or fulltext.
-	ls -t -1 md5 | sed 's/\..*$//' | tr '\n' '\0' | search "$@"
+    md5) #[OPTION]... SEARCH; Searches for files matching SEARCH string and prints a list of md5's for further processing. SEARCH is matched against all bibtex fields and the md5 hash itself. Use options to limit the bibtex search or search notes or fulltext. If SEARCH is -, filter the md5s by the md5s supplied on stdin.
+	zparseopts -D -E f=FILTER
+	${=${FILTER:-cat}:/$FILTER/grep -xf -} <(ls -1t md5 | sed 's/\..*$//' | search "$@")
+#	${=${@:/-grep -xf -}} <(ls -1t md5 | sed 's/\..*$//')
+	exit
+	if [[ "$@" == - ]]; then
+	    grep -xf - <(ls -1t md5 | sed 's/\..*$//')
+	else
+	    ls -1t md5 | sed 's/\..*$//' | search "$@"
+	fi	
 	;;
     
     notes) #SEARCH; Opens the notes file for the document with title matching the SEARCH term using $EDITOR.	
@@ -81,7 +92,7 @@ case "$CMD" in
 	;;
     
     *)	
-	"$0" help 1>&2
+	"$0" help >&2
 	exit 1
 	;;
 esac
