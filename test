@@ -48,7 +48,7 @@ assert 'md5 search wildcard' "$($KB md5 a)" "$(echo "$AMD5")"
 
 #ls
 assert 'ls' "$($KB ls)" "$(echo 'b\na')"
-
+assert 'ls filter' "$(echo "$AMD5" | $KB ls -f)" "$(echo "a")"
 
 
 [[ -z "$ERR" ]] && echo "All Tests Pass"
