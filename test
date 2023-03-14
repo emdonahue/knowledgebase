@@ -47,6 +47,8 @@ assert 'md5 -eq b' "$($KB md5 -q title -eq b)" "$(echo "$BMD5")"
 assert 'md5 -eq a' "$($KB md5 -q title -eq a)" "$(echo "$AMD5")"
 assert 'md5 -ne a' "$($KB md5 -q title -ne a)" "$(echo "$BMD5")"
 assert 'md5 -a' "$($KB md5 -q title -eq a -a title -eq a)" "$(echo "$AMD5")"
+assert 'md5 implicit -a' "$($KB md5 -q title -eq a title -eq a)" "$(echo "$AMD5")"
+assert 'md5 -o' "$($KB md5 -q title -eq a -o title -eq a)" "$(echo "$AMD5")"
 #assert 'md5 search wildcard' "$($KB md5 a)" "$(echo "$AMD5")"
 
 #ls
