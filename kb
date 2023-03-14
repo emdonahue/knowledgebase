@@ -23,13 +23,13 @@ function disambiguate() { # Accepts md5s or filenames based on md5s and presents
     local MD5S=("${(@f)$(</dev/stdin)}")
     local PS3='Type a number to disambiguate: '
     [[ $#MD5S == 1 ]] && echo "$MD5S" && return
-    select MD5 in "${(@f)$(printf '%s\n' "$MD5S[@]" | "$SCRIPT" ls -c)}"; do
+    select MD5 in "${(@f)$(printf '%s\n' "$MD5S[@]" | "$SCRIPT" ls -f)}"; do
 	[[ $REPLY -le $#MD5S ]] && echo "$MD5S[$REPLY]" && break
     done < /dev/tty
 }
 
 function file2md5() { sed -E 's_^(.*/)*([[:alnum:]]+)(\..*)?$_\2_' }
-function md52file() { sed -E 's_.*_'"${2:-bib}"'/&.'"${2:-bib}"'_' }
+function md52file() { sed -E 's_.*_'"${1:-bib}"'/&.'"${1:-bib}"'_' }
 
 CMD="$1"
 
@@ -80,7 +80,7 @@ case "$CMD" in
 	    -o) join -a1 -a2 - <("$SCRIPT" md5 "$@[2,-1]");;
 	    -q) "$SCRIPT" md5 | "$SCRIPT" md5 "$@[2,-1]";;
 	    -i) "$SCRIPT" md5 | "$SCRIPT" md5 "$@[2,-1]" | disambiguate;;
-	    -c) cat;;
+	    -f) cat;;
 	    *)
 		case "$2" in
 		    -eq|-ne)
@@ -92,8 +92,8 @@ case "$CMD" in
 	esac		
 	;;
     
-    org) #SEARCH; Opens the org notes file for the document using $EDITOR.	
-	${=EDITOR} org/$(disambiguate ${(f)"$(grep -EZriH '^title'$'\t''.*'"$*" bib | sed -E 's|bib/(.*)\.bib\x00title\t(.*)|\2\t\1|')"} | sed -E 's/.*\t([^\t]+)$/\1/').org
+    org) #QUERY; Opens the org notes file for the document matching QUERY using $EDITOR.
+	${=EDITOR} $("$SCRIPT" md5 -i "$@" | md52file org)
 	;;
     
     *)	

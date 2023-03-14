@@ -52,12 +52,14 @@ assert 'md5 -a' "$($KB md5 -q title -eq a -a title -eq a)" "$(echo "$AMD5")"
 assert 'md5 implicit -a' "$($KB md5 -q title -eq a title -eq a)" "$(echo "$AMD5")"
 assert 'md5 -o' "$($KB md5 -q title -eq a -o title -eq a)" "$(echo "$AMD5")"
 assert 'md5 -i' "$($KB md5 -i title -eq a)" "$(echo "$AMD5")"
-#assert 'md5 -o multiple' "$($KB md5 -q title -eq a -o title -eq c)" "$(echo "$AMD5\n$CMD5")"
 
 #ls
 assert 'ls' "$($KB ls)" "$(echo 'c\nb\na')"
-#assert 'ls filter' "$(echo "$AMD5" | $KB ls -f)" "$(echo "a")"
+assert 'ls file' "$(echo "$AMD5" | $KB ls -f)" "$(echo "a")"
 
+#org
+assert 'org' "$(EDITOR=echo $KB org title -eq a)" "$(echo "org/$AMD5.org")"
+assert 'org redundant query' "$(EDITOR=echo $KB org -i title -eq a)" "$(echo "org/$AMD5.org")"
 
 [[ -z "$ERR" ]] && echo "All Tests Pass"
 exit "$ERR"
