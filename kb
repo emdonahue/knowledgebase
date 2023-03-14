@@ -37,11 +37,10 @@ function query() {
 	-a) "$0" "$@[2,-1]";;
 	-o) join -a1 -a2 - <("$0" -q "$@[2,-1]");;
 	-q) ls md5 | cut -c -32 | "$0" "$@[2,-1]";;
-	-f) cat;;
 	*)
 	    case "$2" in
 		-eq|-ne)
-		    sed 's_.*_bib/&.bib_' | xargs grep -Ei ${${2:/-eq/-l}:/-ne/-L} '^'"$1"'={.*'"$3"'.*},$' | file2md5 | "$0" "${@[4,-1]:--f}"
+		    sed 's_.*_bib/&.bib_' | xargs grep -Ei ${${2:/-eq/-l}:/-ne/-L} '^'"$1"'={.*'"$3"'.*},$' | file2md5 | "$0" "$@[4,-1]"
 		    ;;
 		*) echo "kb: malformed query: $@" >&2 && exit 1;;
 	    esac 
