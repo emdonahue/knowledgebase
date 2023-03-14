@@ -23,13 +23,31 @@ function disambiguate() { # Accepts md5s or filenames based on md5s and presents
     local MD5S=("${(@f)$(</dev/stdin)}")
     local PS3='Type a number to disambiguate: '
     [[ $#MD5S == 1 ]] && echo "$MD5S" && return
-    select MD5 in "${(@f)$(printf '%s\n' "$MD5S[@]" | "$SCRIPT" ls -f)}"; do
+    select MD5 in "${(@f)$(printf '%s\n' "$MD5S[@]" | "$SCRIPT" ls -a)}"; do
 	[[ $REPLY -le $#MD5S ]] && echo "$MD5S[$REPLY]" && break
     done < /dev/tty
 }
 
 function file2md5() { sed -E 's_^(.*/)*([[:alnum:]]+)(\..*)?$_\2_' }
 function md52file() { sed -E 's_.*_'"${1:-bib}"'/&.'"${1:-bib}"'_' }
+
+function query() {
+    case "$1" in
+	'') cat;;
+	-a) "$0" "$@[2,-1]";;
+	-o) join -a1 -a2 - <("$0" -q "$@[2,-1]");;
+	-q) ls md5 | cut -c -32 | "$0" "$@[2,-1]";;
+	-f) cat;;
+	*)
+	    case "$2" in
+		-eq|-ne)
+		    sed 's_.*_bib/&.bib_' | xargs grep -Ei ${${2:/-eq/-l}:/-ne/-L} '^'"$1"'={.*'"$3"'.*},$' | file2md5 | "$0" "${@[4,-1]:--f}"
+		    ;;
+		*) echo "kb: malformed query: $@" >&2 && exit 1;;
+	    esac 
+	    ;;
+    esac		
+}
 
 CMD="$1"
 
@@ -74,22 +92,8 @@ case "$CMD" in
 	;;
 
     md5) #[QUERY]; Searches for files matching QUERY and prints a list of md5's for further processing. If QUERY is omitted, print all md5s.
-	case "$1" in
-	    '') ls md5 | cut -c -32;;
-	    -a) "$SCRIPT" md5 "$@[2,-1]";;
-	    -o) join -a1 -a2 - <("$SCRIPT" md5 -q "$@[2,-1]");;
-	    -q) "$SCRIPT" md5 | "$SCRIPT" md5 "$@[2,-1]";;
-	    -i) "$SCRIPT" md5 | "$SCRIPT" md5 "$@[2,-1]" | disambiguate;;
-	    -f) cat;;
-	    *)
-		case "$2" in
-		    -eq|-ne)
-			sed 's_.*_bib/&.bib_' | xargs grep -Ei ${${2:/-eq/-l}:/-ne/-L} '^'"$1"'={.*'"$3"'.*},$' | file2md5 | "$SCRIPT" md5 "${@[4,-1]:--f}"
-		    ;;
-		    *) echo "kb: malformed query: $@" >&2 && exit 1;;
-		esac 
-		;;
-	esac		
+	zparseopts -D -E i=INTERACTIVE f=FILTER
+	query ${=${${:--q $1}:/-q -a/-a}:/-q -b/-b} "$@[2,-1]" | {[[ $INTERACTIVE ]] && disambiguate || cat}
 	;;
     
     org) #QUERY; Opens the org notes file for the document matching QUERY using $EDITOR.
