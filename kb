@@ -12,6 +12,7 @@ if [[ "${TRACE-0}" == "1" ]]; then set -o xtrace; fi
 
 set -o noclobber
 unset c #Reserved variable for inline comments
+export LC_COLLATE=C
 
 DIRS=(inbox md5 text bib notes)
 SCRIPT="$0"
@@ -73,7 +74,23 @@ case "$CMD" in
 
     md5) #[OPTION]... SEARCH; Searches for files matching SEARCH string and prints a list of md5's for further processing.
 	#zparseopts -D -E i=INTERACTIVE ${c#}
-	{[[ $FILTER ]] && cat || ls -1t md5 | sed 's/\..*$//' | search "$@"} | ${${INTERACTIVE:-cat}:/$INTERACTIVE/disambiguate}
+	#{[[ $FILTER ]] && cat || ls -1t md5 | sed 's/\..*$//' | search "$@"} | ${${INTERACTIVE:-cat}:/$INTERACTIVE/disambiguate}
+	case "$1" in
+	    '') ls bib | cut -c -32;;
+	    -a) echo 'and';;
+	    -o) echo 'or';;
+	    *)
+		case "$2" in
+		    -eq) echo 'equal';;
+		    -ne) echo 'not equal';;
+		    *) echo 'wildcard'
+		    sed -E 's/(.*)(\..*)?/bib\/\1.bib/' | xargs -d\\n grep -Eil -e '^@\w+\{'"$*"'\,$' -e '^ *\w+={.*'"$*"'.*}, *' | sed -E 's_^bib/(.*)\.bib$_\1_'
+		    echo 'wildcard search term'
+		    ;;
+		esac		
+		;;
+	esac
+		
 	;;
     
     notes) #SEARCH; Opens the notes file for the document with title matching the SEARCH term using $EDITOR.	
