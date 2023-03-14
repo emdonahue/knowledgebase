@@ -10,7 +10,7 @@ assert() {
 
 function teardown() {
     cd "$DIR"
-    rm -rf inbox md5 text notes bib
+    rm -rf inbox md5 text org bib
 }
 
 AMD5=$(md5sum <<< 'a' | cut -f1 -d' ')
@@ -38,9 +38,9 @@ $KB import
 [[ -f md5/$BMD5.txt ]] || assert 'import m5d b  '
 [[ -f bib/$AMD5.bib ]] || assert 'import bib a'
 [[ -f bib/$BMD5.bib ]] || assert 'import bib b'
-[[ -f notes/$AMD5.org ]] || assert 'import org a'
-assert 'import org link' "$(head -n1 notes/$AMD5.org)" '[[file:../md5/'"$AMD5"'.pdf][a]]'
-[[ -f notes/$BMD5.org ]] || assert 'import org b'
+[[ -f org/$AMD5.org ]] || assert 'import org a'
+assert 'import org link' "$(head -n1 org/$AMD5.org)" '[[file:../md5/'"$AMD5"'.pdf][a]]'
+[[ -f org/$BMD5.org ]] || assert 'import org b'
 assert 'import bib' "$(cat bib/$AMD5.bib)" "$(echo '@article{'"$AMD5"',\ntitle={a},\n}')"
 
 #md5
@@ -51,6 +51,7 @@ assert 'md5 -ne a' "$($KB md5 -q title -ne a)" "$(echo "$CMD5\n$BMD5")"
 assert 'md5 -a' "$($KB md5 -q title -eq a -a title -eq a)" "$(echo "$AMD5")"
 assert 'md5 implicit -a' "$($KB md5 -q title -eq a title -eq a)" "$(echo "$AMD5")"
 assert 'md5 -o' "$($KB md5 -q title -eq a -o title -eq a)" "$(echo "$AMD5")"
+assert 'md5 -i' "$($KB md5 -i title -eq a)" "$(echo "$AMD5")"
 #assert 'md5 -o multiple' "$($KB md5 -q title -eq a -o title -eq c)" "$(echo "$AMD5\n$CMD5")"
 
 #ls

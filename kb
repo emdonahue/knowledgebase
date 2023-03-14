@@ -16,25 +16,20 @@ set -o noclobber
 unset c #Reserved variable for inline comments
 export LC_COLLATE=C
 
-DIRS=(inbox md5 text bib notes)
+DIRS=(inbox md5 text bib org)
 SCRIPT="$0"
 
 function disambiguate() { # Accepts md5s or filenames based on md5s and presents a formatted select, returning a single md5
-    local MD5S=("${(@f)$("$SCRIPT" ls -f)}")
+    local MD5S=("${(@f)$(</dev/stdin)}")
     local PS3='Type a number to disambiguate: '
     [[ $#MD5S == 1 ]] && echo "$MD5S" && return
-    select MD5 in "$MD5S[@]"; do
-	[[ $REPLY -le $#MD5S ]] && echo "$MD5" && break
+    select MD5 in "${(@f)$(printf '%s\n' "$MD5S[@]" | "$SCRIPT" ls -c)}"; do
+	[[ $REPLY -le $#MD5S ]] && echo "$MD5S[$REPLY]" && break
     done < /dev/tty
 }
 
-function search() {
-    sed -E 's/(.*)(\..*)?/bib\/\1.bib/' | xargs -d\\n grep -Eil -e '^@\w+\{'"$*"'\,$' -e '^ *\w+={.*'"$*"'.*}, *' | sed -E 's_^bib/(.*)\.bib$_\1_'
-}
-
-function file2md5() {
-    sed -E 's_^(.*/)*([[:alnum:]]+)(\..*)?$_\2_'
-}
+function file2md5() { sed -E 's_^(.*/)*([[:alnum:]]+)(\..*)?$_\2_' }
+function md52file() { sed -E 's_.*_'"${2:-bib}"'/&.'"${2:-bib}"'_' }
 
 CMD="$1"
 
@@ -65,7 +60,7 @@ case "$CMD" in
 	    IMPORT_MD5=$(md5sum "$f" | cut -f1 -d' ')
 	    mv "$f" "md5/$IMPORT_MD5.$f:e"
 	    [[ ! -f "bib/$IMPORT_MD5.bib" ]] && echo '@article{'"$IMPORT_MD5"',\ntitle={'"$f:t:r"'},\n}' > "bib/$IMPORT_MD5.bib"
-	    [[ ! -f "notes/$IMPORT_MD5.org" ]] && echo '[[file:../md5/'"$IMPORT_MD5"'.'"$f:e"']['"$f:t:r"']]' > "notes/$IMPORT_MD5.org"
+	    [[ ! -f "org/$IMPORT_MD5.org" ]] && echo '[[file:../md5/'"$IMPORT_MD5"'.'"$f:e"']['"$f:t:r"']]' > "org/$IMPORT_MD5.org"
 	done
 	;;
     
@@ -75,34 +70,30 @@ case "$CMD" in
 
     ls) #[OPTION...] SEARCH; Lists files matching search criteria.
 	#TODO use sed hold space to clip out title, author, year in desired order
-	"$SCRIPT" md5 "$@" | sed -E 's_.*_bib/&.bib_' | xargs -d\\n sed -nE 's/^title=\{(.*)\},$/\1/p'
+	"$SCRIPT" md5 "$@" | md52file | xargs sed -nE 's/^title=\{(.*)\},$/\1/p'
 	;;
 
-    md5) #[OPTION]... SEARCH; Searches for files matching SEARCH string and prints a list of md5's for further processing.
-	#zparseopts -D -E i=INTERACTIVE ${c#}
-	#{[[ $FILTER ]] && cat || ls -1t md5 | sed 's/\..*$//' | search "$@"} | ${${INTERACTIVE:-cat}:/$INTERACTIVE/disambiguate}
+    md5) #[QUERY]; Searches for files matching QUERY and prints a list of md5's for further processing. If QUERY is omitted, print all md5s.
 	case "$1" in
 	    '') ls md5 | cut -c -32;;
 	    -a) "$SCRIPT" md5 "$@[2,-1]";;
 	    -o) join -a1 -a2 - <("$SCRIPT" md5 "$@[2,-1]");;
 	    -q) "$SCRIPT" md5 | "$SCRIPT" md5 "$@[2,-1]";;
+	    -i) "$SCRIPT" md5 | "$SCRIPT" md5 "$@[2,-1]" | disambiguate;;
+	    -c) cat;;
 	    *)
 		case "$2" in
 		    -eq|-ne)
 			sed 's_.*_bib/&.bib_' | xargs grep -Ei ${${2:/-eq/-l}:/-ne/-L} '^'"$1"'={.*'"$3"'.*},$' | file2md5
 		    ;;
-		    *) echo 'wildcard'
-		    sed -E 's/(.*)(\..*)?/bib\/\1.bib/' | xargs -d\\n grep -Eil -e '^@\w+\{'"$*"'\,$' -e '^ *\w+={.*'"$*"'.*}, *' | sed -E 's_^bib/(.*)\.bib$_\1_'
-		    echo 'wildcard search term'
-		    ;;
+		    *) echo "kb: malformed query: $@" >&2 && exit 1;;
 		esac		
 		;;
-	esac
-		
+	esac		
 	;;
     
-    notes) #SEARCH; Opens the notes file for the document with title matching the SEARCH term using $EDITOR.	
-	${=EDITOR} notes/$(disambiguate ${(f)"$(grep -EZriH '^title'$'\t''.*'"$*" bib | sed -E 's|bib/(.*)\.bib\x00title\t(.*)|\2\t\1|')"} | sed -E 's/.*\t([^\t]+)$/\1/').org
+    org) #SEARCH; Opens the org notes file for the document using $EDITOR.	
+	${=EDITOR} org/$(disambiguate ${(f)"$(grep -EZriH '^title'$'\t''.*'"$*" bib | sed -E 's|bib/(.*)\.bib\x00title\t(.*)|\2\t\1|')"} | sed -E 's/.*\t([^\t]+)$/\1/').org
 	;;
     
     *)	
