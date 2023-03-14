@@ -5,6 +5,7 @@
 #TODO test interactive editor programs by substituting EDITOR with echo
 #TODO add ls sorting based on note modification time
 #TODO automatically fix formatting on bibtex files after editing, including missing files
+#TODO handle multiple filetypes that get added with same md5 (rtf and txt). 
 
 set -o errexit
 set -o pipefail
@@ -28,6 +29,10 @@ function disambiguate() { # Accepts md5s or filenames based on md5s and presents
 
 function search() {
     sed -E 's/(.*)(\..*)?/bib\/\1.bib/' | xargs -d\\n grep -Eil -e '^@\w+\{'"$*"'\,$' -e '^ *\w+={.*'"$*"'.*}, *' | sed -E 's_^bib/(.*)\.bib$_\1_'
+}
+
+function file2md5() {
+    sed -E 's_^(.*/)*([[:alnum:]]+)(\..*)?$_\2_'
 }
 
 CMD="$1"
@@ -76,12 +81,15 @@ case "$CMD" in
 	#zparseopts -D -E i=INTERACTIVE ${c#}
 	#{[[ $FILTER ]] && cat || ls -1t md5 | sed 's/\..*$//' | search "$@"} | ${${INTERACTIVE:-cat}:/$INTERACTIVE/disambiguate}
 	case "$1" in
-	    '') ls bib | cut -c -32;;
+	    '') ls md5 | cut -c -32;;
 	    -a) echo 'and';;
 	    -o) echo 'or';;
 	    *)
 		case "$2" in
-		    -eq) echo 'equal';;
+		    -eq)
+			#-e '^@\w+\{'"$*"'\,$' -e #citekey
+			"$SCRIPT" md5 | sed 's_.*_bib/&.bib_' | xargs grep -Eil '^'"$1"'={.*'"$3"'.*},$' | file2md5
+		    ;;
 		    -ne) echo 'not equal';;
 		    *) echo 'wildcard'
 		    sed -E 's/(.*)(\..*)?/bib\/\1.bib/' | xargs -d\\n grep -Eil -e '^@\w+\{'"$*"'\,$' -e '^ *\w+={.*'"$*"'.*}, *' | sed -E 's_^bib/(.*)\.bib$_\1_'
