@@ -15,6 +15,7 @@ function teardown() {
 
 AMD5=$(md5sum <<< 'a' | cut -f1 -d' ')
 BMD5=$(md5sum <<< 'b' | cut -f1 -d' ')
+CMD5=$(md5sum <<< 'c' | cut -f1 -d' ')
 
 KB=$(realpath ./kb)
 DIR=$(mktemp -d)
@@ -26,6 +27,7 @@ assert 'bad file structure' "$($KB import 2>&1)" 'kb directory structure not det
 $KB init
 echo 'a' > inbox/a.pdf
 echo 'b' > inbox/b.txt
+echo 'c' > inbox/c.txt
 echo 'z' > md5/$AMD5.pdf
 
 #import
@@ -42,17 +44,17 @@ assert 'import org link' "$(head -n1 notes/$AMD5.org)" '[[file:../md5/'"$AMD5"'.
 assert 'import bib' "$(cat bib/$AMD5.bib)" "$(echo '@article{'"$AMD5"',\ntitle={a},\n}')"
 
 #md5
-assert 'md5' "$($KB md5)" "$(echo "$BMD5\n$AMD5")"
+assert 'md5' "$($KB md5)" "$(echo "$CMD5\n$BMD5\n$AMD5")"
 assert 'md5 -eq b' "$($KB md5 -q title -eq b)" "$(echo "$BMD5")"
 assert 'md5 -eq a' "$($KB md5 -q title -eq a)" "$(echo "$AMD5")"
-assert 'md5 -ne a' "$($KB md5 -q title -ne a)" "$(echo "$BMD5")"
+assert 'md5 -ne a' "$($KB md5 -q title -ne a)" "$(echo "$CMD5\n$BMD5")"
 assert 'md5 -a' "$($KB md5 -q title -eq a -a title -eq a)" "$(echo "$AMD5")"
 assert 'md5 implicit -a' "$($KB md5 -q title -eq a title -eq a)" "$(echo "$AMD5")"
 assert 'md5 -o' "$($KB md5 -q title -eq a -o title -eq a)" "$(echo "$AMD5")"
-#assert 'md5 search wildcard' "$($KB md5 a)" "$(echo "$AMD5")"
+#assert 'md5 -o multiple' "$($KB md5 -q title -eq a -o title -eq c)" "$(echo "$AMD5\n$CMD5")"
 
 #ls
-assert 'ls' "$($KB ls)" "$(echo 'b\na')"
+assert 'ls' "$($KB ls)" "$(echo 'c\nb\na')"
 #assert 'ls filter' "$(echo "$AMD5" | $KB ls -f)" "$(echo "a")"
 
 
