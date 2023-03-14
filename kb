@@ -83,7 +83,7 @@ case "$CMD" in
 	#{[[ $FILTER ]] && cat || ls -1t md5 | sed 's/\..*$//' | search "$@"} | ${${INTERACTIVE:-cat}:/$INTERACTIVE/disambiguate}
 	case "$1" in
 	    '') ls md5 | cut -c -32;;
-	    -a) echo 'and';;
+	    -a) "$SCRIPT" md5 "$@[2,-1]";;
 	    -o) echo 'or';;
 	    -q) "$SCRIPT" md5 | "$SCRIPT" md5 "$@[2,-1]";;
 	    *)
