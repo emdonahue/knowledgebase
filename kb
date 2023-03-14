@@ -14,21 +14,15 @@ set -o noclobber
 unset c #Reserved variable for inline comments
 
 DIRS=(inbox md5 text bib notes)
+SCRIPT="$0"
 
-function disambiguate() {
+function disambiguate() { # Accepts md5s or filenames based on md5s and presents a formatted select, returning a single md5
+    local MD5S=("${(@f)$("$SCRIPT" ls -f)}")
     local PS3='Type a number to disambiguate: '
-    [[ $# == 1 ]] && echo "$1" && return
-    select opt; do
-	[[ $REPLY -le $# ]] && echo "$opt" && break
-    done
-}
-
-function disambiguate_md5() { # Accepts md5s or filenames based on md5s and presents a formatted select, returning a single md5
-    #disambiguate ${(f)
-    #sed -nE 's/^title=\{(.*)\},/\1/p' bib/${^${(@f)$(< /dev/stdin):t:r}}.bib
-    echo "disambiguating: ">&2
-    cat
-    #local x=(bib/${^${(@f)$(< /dev/stdin):t:r}}.bib)
+    [[ $#MD5S == 1 ]] && echo "$MD5S" && return
+    select MD5 in "$MD5S[@]"; do
+	[[ $REPLY -le $#MD5S ]] && echo "$MD5" && break
+    done < /dev/tty
 }
 
 function search() {
@@ -51,7 +45,7 @@ esac
 case "$CMD" in
     --help|-h|help) #[SUBCOMMAND]; Prints help text for SUBCOMMAND. If SUBCOMMAND omitted, prints list of subcommands.
 	[[ $# -eq 0 ]] && echo 'kb - Personal KnowledgeBase utility for organizing and searching PDFs, other text-based media, notes, etc.\nUsage: kb SUBCOMMAND [ARGUMENTS...]\n\nSubcommands:'
-	sed -nE '/\s*'"$1"'\)\s#/'"${1:+,/^\s*;;\s*$/}"'{s/^[[:space:]]*([-|[:alnum:]]+)\)\s#([^;]*); (.*)/'"${${1-\t}:#$1}"'\1 \2\t\3/p; s/.*(\w+)[-+:]*=\w+ \$\{c#(.*); (.*)\}.*/\t-\1 \2\t\3/p}' "$0"
+	sed -nE '/\s*'"$1"'\)\s#/'"${1:+,/^\s*;;\s*$/}"'{s/^[[:space:]]*([-|[:alnum:]]+)\)\s#([^;]*); (.*)/'"${${1-\t}:#$1}"'\1 \2\t\3/p; s/.*(\w+)[-+:]*=\w+ \$\{c#(.*); (.*)\}.*/\t-\1 \2\t\3/p}' "$SCRIPT"
 	;;
 
     bib) #SEARCH; Opens the bibliography file with title matching SEARCH term using $EDITOR.
@@ -74,17 +68,12 @@ case "$CMD" in
 
     ls) #[OPTION...] SEARCH; Lists files matching search criteria.
 	#TODO use sed hold space to clip out title, author, year in desired order
-	"$0" md5 "$@" | xargs -d\\n -I{} sed -nE 's/^title=\{(.*)\},$/\1/p' bib/{}.bib
+	"$SCRIPT" md5 "$@" | sed -E 's_.*_bib/&.bib_' | xargs -d\\n sed -nE 's/^title=\{(.*)\},$/\1/p'
 	;;
 
     md5) #[OPTION]... SEARCH; Searches for files matching SEARCH string and prints a list of md5's for further processing.
-	zparseopts -D -E f=FILTER i=INTERACTIVE
-	[[ $FILTER ]] && cat || {ls -1t md5 | sed 's/\..*$//' | search "$@"}
-	#ls -1t md5 | sed -E 's/(.*)\..*/bib\/\1.bib/' | xargs -d\\n grep -Eil -e '^@\w+\{'"$*"'\,$' -e '^ *\w+={.*'"$*"'.*}, *' | sed -E 's_^bib/(.*)\.bib$_\1_'
-	exit
-	ls -1t md5 | sed 's/\..*$//' | search "$@"
-	exit
-	${=${FILTER:-cat}:/$FILTER/grep -xf -} <(ls -1t md5 | sed 's/\..*$//' | search "$@") | ${${INTERACTIVE:-cat}:/$INTERACTIVE/disambiguate_md5}
+	#zparseopts -D -E i=INTERACTIVE ${c#}
+	{[[ $FILTER ]] && cat || ls -1t md5 | sed 's/\..*$//' | search "$@"} | ${${INTERACTIVE:-cat}:/$INTERACTIVE/disambiguate}
 	;;
     
     notes) #SEARCH; Opens the notes file for the document with title matching the SEARCH term using $EDITOR.	
@@ -92,7 +81,7 @@ case "$CMD" in
 	;;
     
     *)	
-	"$0" help >&2
+	"$SCRIPT" help >&2
 	exit 1
 	;;
 esac
