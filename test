@@ -43,8 +43,9 @@ assert 'import bib' "$(cat bib/$AMD5.bib)" "$(echo '@article{'"$AMD5"',\ntitle={
 
 #md5
 assert 'md5' "$($KB md5)" "$(echo "$BMD5\n$AMD5")"
-assert 'md5 eq' "$($KB md5 title -eq b)" "$(echo "$BMD5")"
-assert 'md5 eq' "$($KB md5 title -eq a)" "$(echo "$AMD5")"
+assert 'md5 eq b' "$($KB md5 title -eq b)" "$(echo "$BMD5")"
+assert 'md5 eq a' "$($KB md5 title -eq a)" "$(echo "$AMD5")"
+assert 'md5 ne a' "$($KB md5 title -ne a)" "$(echo "$BMD5")"
 #assert 'md5 search wildcard' "$($KB md5 a)" "$(echo "$AMD5")"
 
 #ls
