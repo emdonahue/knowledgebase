@@ -36,12 +36,12 @@ $KB import
 [[ -f inbox/b.txt ]] && assert 'import inbox b'
 [[ -f md5/$AMD5.pdf ]] || assert 'import m5d a'
 [[ -f md5/$BMD5.txt ]] || assert 'import m5d b  '
-[[ -f bib/$AMD5.bib ]] || assert 'import bib a'
-[[ -f bib/$BMD5.bib ]] || assert 'import bib b'
+[[ -f bib/$AMD5 ]] || assert 'import bib a'
+[[ -f bib/$BMD5 ]] || assert 'import bib b'
 [[ -f org/$AMD5.org ]] || assert 'import org a'
 assert 'import org link' "$(head -n1 org/$AMD5.org)" '[[file:../md5/'"$AMD5"'.pdf][a]]'
 [[ -f org/$BMD5.org ]] || assert 'import org b'
-assert 'import bib' "$(cat bib/$AMD5.bib)" "$(echo '@article{'"$AMD5"',\ntitle={a},\n}')"
+assert 'import bib' "$(cat bib/$AMD5)" "$(echo 'title\ta\nfilename\ta')"
 
 #md5
 assert 'md5' "$($KB md5)" "$(echo "$CMD5\n$BMD5\n$AMD5")"
