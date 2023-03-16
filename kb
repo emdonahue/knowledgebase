@@ -11,11 +11,13 @@ set -o pipefail
 if [[ "${TRACE-0}" == "1" ]]; then set -o xtrace; fi
 
 set -o noclobber
+set -o extendedglob
 unset c #Reserved variable for inline comments
 export LC_COLLATE=C
 
 DIRS=(inbox md5 text bib org)
 SCRIPT="$0"
+E=(-e)
 
 function disambiguate() { # Accepts md5s or filenames based on md5s and presents a formatted select, returning a single md5
     local MD5S=("${(@f)$(</dev/stdin)}")
@@ -67,11 +69,16 @@ case "$CMD" in
 	;;
 
     bib) #[OPTION...] QUERY; Adds or removes records from the bibliography files identified by QUERY.
-	zparseopts -D -E d+:=DELETIONS s+:=INSERTIONS
-	#local BIBFLAGS=(-d -s)
-	echo '/'${(j:|:)${(@f)$(printf '%s\n' ${${DELETIONS:#-d}/=/$'\t'} | sed -E 's/[^^]/[&]/g;s/\^/\\^/g;s/\t\]/\\\\t].*/;s/^/\^/')}}'/d'
+	#echo "TEST: $@"
+	zparseopts -D -E d+:=DELETIONS m+:=INSERTIONS
 	
-	"$SCRIPT" md5 "$@" | md52file bib | xargs sed -Ei $(echo '/'${(j:|:)${(@f)$(printf '%s\n' ${${DELETIONS:#-d}/=/$'\t'} | sed -E 's/[^^]/[&]/g;s/\^/\\^/g;s/\t\]/\\\\t].*/;s/^/\^/')}}'/d')
+	#local BIBFLAGS=(-d -s)
+	#echo '/'${(j:|:)${(@f)$(printf '%s\n' ${${DELETIONS:#-d}/=/$'\t'} | sed -E 's/[^^]/[&]/g;s/\^/\\^/g;s/\t\]/\\\\t].*/;s/^/\^/')}}'/d'
+	DELETIONS=(${DELETIONS:+$(echo '/'${(j:|:)${(@f)$(printf '%s\n' ${${DELETIONS:#-d}/=/$'\t'} | sed -E 's/[^^]/[&]/g;s/\^/\\^/g;s/\t\]/\\\\t].*/;s/^/\^/')}}'/d')})
+	INSERTIONS=('1 i '${^${INSERTIONS:#-m}/=/$'\t'})	
+	#echo 'insert siz: '"${${E:^^INSERTIONS}[1,2]}"
+	#echo 'final output: ' "${INSERTIONS:+${E:^^INSERTIONS}}"
+	"$SCRIPT" md5 "$@" | md52file bib | xargs sed -Ei ${E:^DELETIONS}  ${INSERTIONS:+${E:^^INSERTIONS}}
 	
 	
 	#echo '/^('${(j:|:)${DELETIONS:#-d}/=/$'\t'.*}')/d' >&2

@@ -65,6 +65,8 @@ assert 'org redundant query' "$(EDITOR=echo $KB org -i title -eq a)" "$(echo "or
 #bib
 $KB bib -d title title -eq a
 assert 'bib -d title' "$(cat bib/$AMD5)" "$(echo 'filename\ta')"
+$KB bib -m title=a filename -eq a
+assert 'bib -m title=a' "$(cat bib/$AMD5)" "$(echo 'title\ta\nfilename\ta')"
 echo 'title\ta\nfilename\ta' > bib/$AMD5
 $KB bib -d title -d filename title -eq a
 assert 'bib -d title filename' "$(cat bib/$AMD5)" ""
