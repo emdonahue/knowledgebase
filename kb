@@ -69,7 +69,7 @@ case "$CMD" in
     bib) #[OPTION...] QUERY; Adds or removes records from the bibliography files identified by QUERY.
 	zparseopts -D -E d+:=DELETIONS s+:=INSERTIONS
 	#local BIBFLAGS=(-d -s)
-	#echo '/'${(j:|:)${(@f)$(printf '%s\n' ${${DELETIONS:#-d}/=/$'\t'} | sed -E 's/[^^]/[&]/g;s/\^/\\^/g;s/\t\]/\\\\t].*/;s/^/\^/')}}'/d'
+	echo '/'${(j:|:)${(@f)$(printf '%s\n' ${${DELETIONS:#-d}/=/$'\t'} | sed -E 's/[^^]/[&]/g;s/\^/\\^/g;s/\t\]/\\\\t].*/;s/^/\^/')}}'/d'
 	
 	"$SCRIPT" md5 "$@" | md52file bib | xargs sed -Ei $(echo '/'${(j:|:)${(@f)$(printf '%s\n' ${${DELETIONS:#-d}/=/$'\t'} | sed -E 's/[^^]/[&]/g;s/\^/\\^/g;s/\t\]/\\\\t].*/;s/^/\^/')}}'/d')
 	
