@@ -10,14 +10,18 @@ Usage: kb SUBCOMMAND [ARGUMENTS...]
 
 Subcommands:
 	--help|-h|help [SUBCOMMAND]	Prints help text for SUBCOMMAND. If SUBCOMMAND omitted, prints list of subcommands.
-	bib SEARCH	Opens the bibliography file with title matching SEARCH term using $EDITOR.
+	bib [OPTION...] QUERY	Adds or removes records from the bibliography files identified by QUERY. If addition/deletion options are not supplied, print bibliographic data instead.
 	import 	Consumes files in inbox and generates appropriate archival copies, analysis extracts, and metadata containers.
 	init 	Generates a new directory structure for use by kb in the current directory.
-	ls [OPTION...] SEARCH	Lists files matching search criteria.
-	md5 [OPTION]... SEARCH	Searches for files matching SEARCH string and prints a list of md5's for further processing. SEARCH is matched against all bibtex fields and the md5 hash itself. Use options to limit the bibtex search or search notes or fulltext.
-	notes SEARCH	Opens the notes file for the document with title matching the SEARCH term using $EDITOR.	
+	ls [QUERY]	Lists files matching QUERY. If QUERY omitted, list all files.
+	md5 [QUERY]	Prints md5s of files matching QUERY. If QUERY is omitted, print all md5s.
+	org QUERY	Opens the org notes file for the document matching QUERY using $EDITOR.
 ```
 ## TODO
-- enable searching by keyword
-- add easy metadata editing shortcuts
+- add update language to query (-d -s?ort -u)
+- add options to ls to display different columns
+- add ls sorting based on note modification time
+- handle multiple filetypes that get added with same md5 (rtf and txt).
+- add search by md5
+- add bib formatter for bibtex output
 - use sed hold space to clip out title, author, year in desired order

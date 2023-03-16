@@ -69,26 +69,15 @@ case "$CMD" in
 	sed -nE '/\s*'"$1"'\)\s#/'"${1:+,/^\s*;;\s*$/}"'{s/^[[:space:]]*([-|[:alnum:]]+)\)\s#([^;]*); (.*)/'"${${1-\t}:#$1}"'\1 \2\t\3/p; s/.*(\w+)[-+:]*=\w+ \$\{c#(.*); (.*)\}.*/\t-\1 \2\t\3/p}' "$SCRIPT"
 	;;
 
-    bib) #[OPTION...] QUERY; Adds or removes records from the bibliography files identified by QUERY.
-	#echo "TEST: $@"
-	zparseopts -D -E d+:=DELETIONS m+:=INSERTIONS s+:=UPDATES
-	echo ${${UPDATES:#-s}%%=*} >&2
-	DELETIONS=(DELETIONS ${${UPDATES:#-s}%%=*})
-	echo "DELETIONS: $DELETIONS" >&2
-	#local BIBFLAGS=(-d -s)
-	#echo '/'${(j:|:)${(@f)$(printf '%s\n' ${${DELETIONS:#-d}/=/$'\t'} | sed -E 's/[^^]/[&]/g;s/\^/\\^/g;s/\t\]/\\\\t].*/;s/^/\^/')}}'/d'
+    bib) #[OPTION...] QUERY; Adds or removes records from the bibliography files identified by QUERY. If addition/deletion options are not supplied, print bibliographic data instead.
+	zparseopts -D -E d+:=DELETIONS ${c#KEY[=VALUE]; Deletes all fields matching KEY from the bibliography files matching QUERY. If VALUE is provided, only delete fields both matching KEY and conatining VALUE. Can be supplied multiple times for different KEYS and VALUES.}\
+		   m+:=INSERTIONS ${c#KEY=VALUE; Inserts VALUE under KEY in bibliography files matching QUERY. -m is for multiple entry. To overwrite previous entries, use -s. Can be supplied multiple times for different KEYS and VALUES}\
+		   s+:=UPDATES ${c#KEY=VALUE; Combines -d and -m to delete all previous values for KEY and set KEY to VALUE.}
+	DELETIONS=($DELETIONS ${${UPDATES:#-s}%%=*})
+	INSERTIONS=($INSERTIONS ${UPDATES:#-s})
 	DELETIONS=(${DELETIONS:+$(echo '/'${(j:|:)${(@f)$(printf '%s\n' ${${DELETIONS:#-d}/=/$'\t'} | sed -E 's/[^^]/[&]/g;s/\^/\\^/g;s/\t\]/\\\\t].*/;s/^/\^/')}}'/d')})
 	INSERTIONS=('1 i '${^${INSERTIONS:#-m}/=/$'\t'})	
-	#echo 'insert siz: '"${${E:^^INSERTIONS}[1,2]}"
-	#echo 'final output: ' "${INSERTIONS:+${E:^^INSERTIONS}}"
-	#echo "QUERY: $@"
-	#"$SCRIPT" md5 "$@"
 	"$SCRIPT" md5 "$@" | md52file bib | if [[ $INSERTIONS$DELETIONS ]]; then xargs sed -Ei ${INSERTIONS:+${E:^^INSERTIONS}} ${E:^DELETIONS}; else xargs cat; fi
-	
-	
-	#echo '/^('${(j:|:)${DELETIONS:#-d}/=/$'\t'.*}')/d' >&2
-	#grep -Eril '^ *\w+={.*'"$*.*}, *" bib | disambiguate_md5
-	#${=EDITOR} bib/$(disambiguate ${(f)"$(grep -EZriH '^title={.*'"$*}," bib | sed -E 's|bib/(.*)\.bib\x00title\t(.*)|\2\t\1|')"} | sed -E 's/.*\t([^\t]+)$/\1/').bib
 	;;
     
     import) #; Consumes files in inbox and generates appropriate archival copies, analysis extracts, and metadata containers.
@@ -104,12 +93,12 @@ case "$CMD" in
 	mkdir -p "${DIRS[@]}"
 	;;
 
-    ls) #[OPTION...] SEARCH; Lists files matching search criteria.
+    ls) #[QUERY]; Lists files matching QUERY. If QUERY omitted, list all files.
 	#TODO use sed hold space to clip out title, author, year in desired order
 	"$SCRIPT" md5 "$@" | md52file bib | xargs sed -nE 's/^title'$'\t''(.*)/\1/p'
 	;;
 
-    md5) #[QUERY]; Searches for files matching QUERY and prints a list of md5's for further processing. If QUERY is omitted, print all md5s.
+    md5) #[QUERY]; Prints md5s of files matching QUERY. If QUERY is omitted, print all md5s.
 	zparseopts -D -E i=INTERACTIVE
 	query ${=${${:--q $1}:/-q -a/-a}:/-q -b/-b} "$@[2,-1]" | {[[ $INTERACTIVE ]] && disambiguate || cat}
 	;;
