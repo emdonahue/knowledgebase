@@ -70,7 +70,7 @@ case "$CMD" in
 
     bib) #[OPTION...] QUERY; Adds or removes records from the bibliography files identified by QUERY.
 	#echo "TEST: $@"
-	zparseopts -D -E d+:=DELETIONS m+:=INSERTIONS
+	zparseopts -D -E d+:=DELETIONS m+:=INSERTIONS s+=UPDATES
 	
 	#local BIBFLAGS=(-d -s)
 	#echo '/'${(j:|:)${(@f)$(printf '%s\n' ${${DELETIONS:#-d}/=/$'\t'} | sed -E 's/[^^]/[&]/g;s/\^/\\^/g;s/\t\]/\\\\t].*/;s/^/\^/')}}'/d'
@@ -78,7 +78,9 @@ case "$CMD" in
 	INSERTIONS=('1 i '${^${INSERTIONS:#-m}/=/$'\t'})	
 	#echo 'insert siz: '"${${E:^^INSERTIONS}[1,2]}"
 	#echo 'final output: ' "${INSERTIONS:+${E:^^INSERTIONS}}"
-	"$SCRIPT" md5 "$@" | md52file bib | xargs sed -Ei ${E:^DELETIONS}  ${INSERTIONS:+${E:^^INSERTIONS}}
+	#echo "QUERY: $@"
+	#"$SCRIPT" md5 "$@"
+	"$SCRIPT" md5 "$@" | md52file bib | xargs sed -Ei ${INSERTIONS:+${E:^^INSERTIONS}} ${E:^DELETIONS}
 	
 	
 	#echo '/^('${(j:|:)${DELETIONS:#-d}/=/$'\t'.*}')/d' >&2
