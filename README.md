@@ -15,6 +15,7 @@ Subcommands:
 	init 	Generates a new directory structure for use by kb in the current directory.
 	ls [QUERY]	Lists files matching QUERY. If QUERY omitted, list all files.
 	md5 [QUERY]	Prints md5s of files matching QUERY. If QUERY is omitted, print all md5s.
+	open QUERY	Opens the document matching QUERY using xdg-open to select an appropriate application.
 	org QUERY	Opens the org notes file for the document matching QUERY using $EDITOR.
 ```
 ## TODO
