@@ -76,7 +76,7 @@ $KB bib -m title=a -m filename=a -d id id -eq a
 assert 'bib -m title=a -m filename=a -d id' "$(cat bib/$AMD5)" "$(echo 'title\ta\nfilename\ta')"
 $KB bib -d title=b -d filename=a title -eq a
 assert 'bib -d title=b filename=a' "$(cat bib/$AMD5)" "$(echo 'title\ta')"
-#$KB bib -s title=b title -eq a
+$KB bib -s title=b title -eq a
 #assert 'bib -s title=b' "$(cat bib/$AMD5)" "$(echo 'title\tb')"
 
 [[ -z "$ERR" ]] && echo "All Tests Pass"
