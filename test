@@ -62,5 +62,9 @@ assert 'ls stdin' "$(echo "$AMD5" | $KB ls -a)" "$(echo "a")"
 assert 'org' "$(EDITOR=echo $KB org title -eq a)" "$(echo "org/$AMD5.org")"
 assert 'org redundant query' "$(EDITOR=echo $KB org -i title -eq a)" "$(echo "org/$AMD5.org")"
 
+#bib
+$KB bib -d title title -eq a
+assert 'bib -d title' "$(cat bib/$AMD5)" "$(echo 'filename\ta')"
+
 [[ -z "$ERR" ]] && echo "All Tests Pass"
 exit "$ERR"

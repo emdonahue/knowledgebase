@@ -66,8 +66,16 @@ case "$CMD" in
 	sed -nE '/\s*'"$1"'\)\s#/'"${1:+,/^\s*;;\s*$/}"'{s/^[[:space:]]*([-|[:alnum:]]+)\)\s#([^;]*); (.*)/'"${${1-\t}:#$1}"'\1 \2\t\3/p; s/.*(\w+)[-+:]*=\w+ \$\{c#(.*); (.*)\}.*/\t-\1 \2\t\3/p}' "$SCRIPT"
 	;;
 
-    bib) #SEARCH; Opens the bibliography file with title matching SEARCH term using $EDITOR.
-	grep -Eril '^ *\w+={.*'"$*.*}, *" bib | disambiguate_md5
+    bib) #[OPTION...] QUERY; Adds or removes records from the bibliography files identified by QUERY.
+	zparseopts -D -E d+:=DELETIONS s+:=INSERTIONS
+	#local BIBFLAGS=(-d -s)
+	#echo '/'${(j:|:)${(@f)$(printf '%s\n' ${${DELETIONS:#-d}/=/$'\t'} | sed -E 's/[^^]/[&]/g;s/\^/\\^/g;s/\t\]/\\\\t].*/;s/^/\^/')}}'/d'
+	
+	"$SCRIPT" md5 "$@" | md52file bib | xargs sed -Ei $(echo '/'${(j:|:)${(@f)$(printf '%s\n' ${${DELETIONS:#-d}/=/$'\t'} | sed -E 's/[^^]/[&]/g;s/\^/\\^/g;s/\t\]/\\\\t].*/;s/^/\^/')}}'/d')
+	
+	
+	#echo '/^('${(j:|:)${DELETIONS:#-d}/=/$'\t'.*}')/d' >&2
+	#grep -Eril '^ *\w+={.*'"$*.*}, *" bib | disambiguate_md5
 	#${=EDITOR} bib/$(disambiguate ${(f)"$(grep -EZriH '^title={.*'"$*}," bib | sed -E 's|bib/(.*)\.bib\x00title\t(.*)|\2\t\1|')"} | sed -E 's/.*\t([^\t]+)$/\1/').bib
 	;;
     
@@ -90,7 +98,7 @@ case "$CMD" in
 	;;
 
     md5) #[QUERY]; Searches for files matching QUERY and prints a list of md5's for further processing. If QUERY is omitted, print all md5s.
-	zparseopts -D -E i=INTERACTIVE f=FILTER
+	zparseopts -D -E i=INTERACTIVE
 	query ${=${${:--q $1}:/-q -a/-a}:/-q -b/-b} "$@[2,-1]" | {[[ $INTERACTIVE ]] && disambiguate || cat}
 	;;
     
