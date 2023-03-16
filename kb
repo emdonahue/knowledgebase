@@ -71,7 +71,7 @@ case "$CMD" in
     bib) #[OPTION...] QUERY; Adds or removes records from the bibliography files identified by QUERY.
 	#echo "TEST: $@"
 	zparseopts -D -E d+:=DELETIONS m+:=INSERTIONS s+=UPDATES
-	
+	#echo ${UPDATES%%=*} >&2
 	#local BIBFLAGS=(-d -s)
 	#echo '/'${(j:|:)${(@f)$(printf '%s\n' ${${DELETIONS:#-d}/=/$'\t'} | sed -E 's/[^^]/[&]/g;s/\^/\\^/g;s/\t\]/\\\\t].*/;s/^/\^/')}}'/d'
 	DELETIONS=(${DELETIONS:+$(echo '/'${(j:|:)${(@f)$(printf '%s\n' ${${DELETIONS:#-d}/=/$'\t'} | sed -E 's/[^^]/[&]/g;s/\^/\\^/g;s/\t\]/\\\\t].*/;s/^/\^/')}}'/d')})
@@ -80,7 +80,7 @@ case "$CMD" in
 	#echo 'final output: ' "${INSERTIONS:+${E:^^INSERTIONS}}"
 	#echo "QUERY: $@"
 	#"$SCRIPT" md5 "$@"
-	"$SCRIPT" md5 "$@" | md52file bib | xargs sed -Ei ${INSERTIONS:+${E:^^INSERTIONS}} ${E:^DELETIONS}
+	"$SCRIPT" md5 "$@" | md52file bib | if [[ $INSERTIONS$DELETIONS ]]; then xargs sed -Ei ${INSERTIONS:+${E:^^INSERTIONS}} ${E:^DELETIONS}; else xargs cat; fi
 	
 	
 	#echo '/^('${(j:|:)${DELETIONS:#-d}/=/$'\t'.*}')/d' >&2
