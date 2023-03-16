@@ -77,7 +77,7 @@ case "$CMD" in
 	INSERTIONS=($INSERTIONS ${UPDATES:#-s})
 	DELETIONS=(${DELETIONS:+$(echo '/'${(j:|:)${(@f)$(printf '%s\n' ${${DELETIONS:#-d}/=/$'\t'} | sed -E 's/[^^]/[&]/g;s/\^/\\^/g;s/\t\]/\\\\t].*/;s/^/\^/')}}'/d')})
 	INSERTIONS=('1 i '${^${INSERTIONS:#-m}/=/$'\t'})	
-	"$SCRIPT" md5 "$@" | md52file bib | if [[ $INSERTIONS$DELETIONS ]]; then xargs sed -Ei ${INSERTIONS:+${E:^^INSERTIONS}} ${E:^DELETIONS}; else xargs cat; fi
+	"$SCRIPT" md5 "$@" | md52file bib | {[[ $INSERTIONS$DELETIONS ]] && xargs sed -Ei ${INSERTIONS:+${E:^^INSERTIONS}} ${E:^DELETIONS} || xargs cat}
 	;;
     
     import) #; Consumes files in inbox and generates appropriate archival copies, analysis extracts, and metadata containers.
