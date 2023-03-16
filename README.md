@@ -25,4 +25,6 @@ Subcommands:
 - handle multiple filetypes that get added with same md5 (rtf and txt).
 - add search by md5
 - add bib formatter for bibtex output
+- make sed case insensitive for substr match
+- deal with adding duplicate keywords
 - use sed hold space to clip out title, author, year in desired order

@@ -6,6 +6,8 @@
 #TODO handle multiple filetypes that get added with same md5 (rtf and txt).
 #TODO add search by md5
 #TODO add bib formatter for bibtex output
+#TODO make sed case insensitive for substr match
+#TODO deal with adding duplicate keywords
 
 set -o errexit
 set -o pipefail
