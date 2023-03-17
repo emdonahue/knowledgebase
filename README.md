@@ -19,12 +19,13 @@ Subcommands:
 	org QUERY	Opens the org notes file for the document matching QUERY using $EDITOR.
 ```
 ## TODO
-- add update language to query (-d -s?ort -u)
 - add options to ls to display different columns
-- add ls sorting based on note modification time
-- handle multiple filetypes that get added with same md5 (rtf and txt).
+- handle multiple filetypes that get added with same md5 (rtf and txt)
+- handle merging versions of the same bibliographic item (symlink notes and bib?)
 - add search by md5
+- add dates to query language
+- add regex alongside -eq, maybe -re
 - add bib formatter for bibtex output
 - make sed case insensitive for substr match
-- deal with adding duplicate keywords
+- guarantee keywords already exist when adding if specified
 - use sed hold space to clip out title, author, year in desired order

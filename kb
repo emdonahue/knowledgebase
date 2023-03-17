@@ -1,13 +1,14 @@
 #!/bin/zsh
 
-#TODO add update language to query (-d -s?ort -u)
 #TODO add options to ls to display different columns
-#TODO add ls sorting based on note modification time
-#TODO handle multiple filetypes that get added with same md5 (rtf and txt).
+#TODO handle multiple filetypes that get added with same md5 (rtf and txt)
+#TODO handle merging versions of the same bibliographic item (symlink notes and bib?)
 #TODO add search by md5
+#TODO add dates to query language
+#TODO add regex alongside -eq, maybe -re
 #TODO add bib formatter for bibtex output
 #TODO make sed case insensitive for substr match
-#TODO deal with adding duplicate keywords
+#TODO guarantee keywords already exist when adding if specified
 
 set -o errexit
 set -o pipefail
