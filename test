@@ -62,7 +62,7 @@ assert 'md5 -si' "$($KB md5 -si)" "$(echo "$AMD5\n$BMD5\n$CMD5")"
 assert 'md5 -sir' "$($KB md5 -rsi)" "$(echo "$CMD5\n$BMD5\n$AMD5")"
 
 #ls
-assert 'ls' "$($KB ls)" "$(echo 'c\nb\na')"
+assert 'ls' "$($KB ls)" "$(echo 'a\nb\nc')"
 assert 'ls stdin' "$(echo "$AMD5" | $KB ls -a)" "$(echo "a")"
 
 #org
