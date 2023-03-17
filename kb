@@ -118,7 +118,8 @@ case "$CMD" in
 	;;
     
     org) #QUERY; Opens the org notes file for the document matching QUERY using $EDITOR.
-	${=EDITOR} org/$("$SCRIPT" md5 -rsn -i "$@").org
+	ORGFILE=$("$SCRIPT" md5 -rsn -i "$@" | md52file org org)
+	[[ $ORGFILE ]] && ${=EDITOR} $ORGFILE
 	;;
     
     *)	
