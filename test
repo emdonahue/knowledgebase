@@ -31,7 +31,7 @@ echo 'c' > inbox/c.txt
 echo 'z' > md5/$AMD5.pdf
 
 #import
-$KB import
+$KB import -m import=bib -m import2=bib2
 [[ -f inbox/a.pdf ]] && assert 'import inbox a'
 [[ -f inbox/b.txt ]] && assert 'import inbox b'
 [[ -f md5/$AMD5.pdf ]] || assert 'import m5d a'
@@ -41,7 +41,7 @@ $KB import
 [[ -f org/$AMD5.org ]] || assert 'import org a'
 assert 'import org link' "$(head -n1 org/$AMD5.org)" '[[file:../md5/'"$AMD5"'.pdf][a]]'
 [[ -f org/$BMD5.org ]] || assert 'import org b'
-assert 'import bib' "$(cat bib/$AMD5)" "$(echo 'title\ta\nfilename\ta')"
+assert 'import bib' "$(cat bib/$AMD5)" "$(echo 'title\ta\nfilename\ta\nimport\tbib\nimport2\tbib2')"
 
 #md5
 assert 'md5' "$($KB md5)" "$(echo "$CMD5\n$BMD5\n$AMD5")"
@@ -63,6 +63,7 @@ assert 'org' "$(EDITOR=echo $KB org title -eq a)" "$(echo "org/$AMD5.org")"
 assert 'org redundant query' "$(EDITOR=echo $KB org -i title -eq a)" "$(echo "org/$AMD5.org")"
 
 #bib
+$KB bib -d import -d import2 title -eq a
 assert 'bib print' "$($KB bib title -eq a)" "$(echo 'title\ta\nfilename\ta')"
 $KB bib -d title title -eq a
 assert 'bib -d title' "$(cat bib/$AMD5)" "$(echo 'filename\ta')"

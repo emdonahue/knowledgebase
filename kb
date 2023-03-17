@@ -83,11 +83,13 @@ case "$CMD" in
 	;;
     
     import) #; Consumes files in inbox and generates appropriate archival copies, analysis extracts, and metadata containers.
+	zparseopts -D -E m+:=INSERTIONS ${c#; Apply bibliography records to imported documents. Same as bib -m.}
 	find inbox -type f -print0 | while read -d$'\0' f; do
 	    IMPORT_MD5=$(md5sum "$f" | cut -f1 -d' ')
 	    mv "$f" "md5/$IMPORT_MD5.$f:e"
-	    [[ ! -f "bib/$IMPORT_MD5" ]] && echo 'title\t'"$f:t:r"'\nfilename\t'"$f:t:r" > "bib/$IMPORT_MD5"
 	    [[ ! -f "org/$IMPORT_MD5.org" ]] && echo '[[file:../md5/'"$IMPORT_MD5"'.'"$f:e"']['"$f:t:r"']]' > "org/$IMPORT_MD5.org"
+	    [[ ! -f "bib/$IMPORT_MD5" ]] && echo 'title\t'"$f:t:r"'\nfilename\t'"$f:t:r" > "bib/$IMPORT_MD5"
+	    printf '%s\n' ${${INSERTIONS:#-m}/=/$'\t'} >> "bib/$IMPORT_MD5"
 	done
 	;;
     
