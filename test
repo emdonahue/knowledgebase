@@ -26,14 +26,17 @@ assert 'bad file structure' "$($KB import 2>&1)" 'kb directory structure not det
 
 $KB init
 echo 'a' > inbox/a.pdf
-touch -d 'Last week' inbox/a.pdf
 echo 'b' > inbox/b.txt
-touch -d 'Yesterday' inbox/b.txt
 echo 'c' > inbox/c.txt
 echo 'z' > md5/$AMD5.pdf
+touch -d 'Last week' inbox/a.pdf
+touch -d 'Yesterday' inbox/b.txt
 
 #import
 $KB import -m import=bib -m import2=bib2
+touch -d 'Last week' org/$AMD5.org
+touch -d 'Yesterday' org/$BMD5.org
+
 [[ -f inbox/a.pdf ]] && assert 'import inbox a'
 [[ -f inbox/b.txt ]] && assert 'import inbox b'
 [[ -f md5/$AMD5.pdf ]] || assert 'import m5d a'

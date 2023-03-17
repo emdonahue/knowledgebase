@@ -99,7 +99,7 @@ case "$CMD" in
 
     ls) #[QUERY]; Lists files matching QUERY. If QUERY omitted, list all files.
 	#TODO use sed hold space to clip out title, author, year in desired order
-	"$SCRIPT" md5 "$@" | md52file bib | xargs sed -nE 's/^title'$'\t''(.*)/\1/p'
+	"$SCRIPT" md5 -rsn "$@" | md52file bib | xargs sed -nE 's/^title'$'\t''(.*)/\1/p'
 	;;
 
     md5) #[QUERY]; Prints md5s of files matching QUERY. If QUERY is omitted, print all md5s.
