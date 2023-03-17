@@ -25,6 +25,7 @@ E=(-e)
 function disambiguate() { # Accepts md5s or filenames based on md5s and presents a formatted select, returning a single md5
     local MD5S=("${(@f)$(</dev/stdin)}")
     local PS3='Type a number to disambiguate: '
+    if [[ ! $MD5S ]]; then echo "kb: No files matching query" >&2 && exit 1; fi
     [[ $#MD5S == 1 ]] && echo "$MD5S" && return
     select MD5 in "${(@f)$(printf '%s\n' "$MD5S[@]" | "$SCRIPT" ls -a)}"; do
 	[[ $REPLY -le $#MD5S ]] && echo "$MD5S[$REPLY]" && break
