@@ -26,7 +26,9 @@ assert 'bad file structure' "$($KB import 2>&1)" 'kb directory structure not det
 
 $KB init
 echo 'a' > inbox/a.pdf
+touch -d 'Last week' inbox/a.pdf
 echo 'b' > inbox/b.txt
+touch -d 'Yesterday' inbox/b.txt
 echo 'c' > inbox/c.txt
 echo 'z' > md5/$AMD5.pdf
 
@@ -53,6 +55,8 @@ assert 'md5 implicit -a' "$($KB md5 title -eq a title -eq a)" "$(echo "$AMD5")"
 assert 'md5 -o multiple' "$($KB md5 title -eq a -o title -eq c)" "$(echo "$CMD5\n$AMD5")"
 assert 'md5 -o duplicate' "$($KB md5 title -eq a -o title -eq a)" "$(echo "$AMD5")"
 assert 'md5 -i' "$($KB md5 -i title -eq a)" "$(echo "$AMD5")"
+assert 'md5 -si' "$($KB md5 -si)" "$(echo "$AMD5\n$BMD5\n$CMD5")"
+assert 'md5 -sir' "$($KB md5 -rsi)" "$(echo "$CMD5\n$BMD5\n$AMD5")"
 
 #ls
 assert 'ls' "$($KB ls)" "$(echo 'c\nb\na')"
