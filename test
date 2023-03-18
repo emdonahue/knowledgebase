@@ -75,16 +75,18 @@ assert 'bib print' "$($KB bib title -eq a)" "$(echo 'filename\ta\ntitle\ta')"
 $KB bib -d title title -eq a
 assert 'bib -d title' "$(cat bib/$AMD5)" "$(echo 'filename\ta')"
 $KB bib -m title=a filename -eq a
-assert 'bib -m title=a' "$(cat bib/$AMD5)" "$(echo 'title\ta\nfilename\ta')"
+assert 'bib -m title=a' "$(cat bib/$AMD5)" "$(echo 'filename\ta\ntitle\ta')"
 $KB bib -m title=b -m id=a filename -eq a
-assert 'bib -m title=b -m id=a' "$(cat bib/$AMD5)" "$(echo 'title\tb\nid\ta\ntitle\ta\nfilename\ta')"
+assert 'bib -m title=b -m id=a' "$(cat bib/$AMD5)" "$(echo 'filename\ta\nid\ta\ntitle\ta\ntitle\tb')"
 $KB bib -d title -d filename title -eq a
 assert 'bib -d title filename' "$(cat bib/$AMD5)" "$(echo 'id\ta')"
 $KB bib -m title=a -m filename=a -d id id -eq a
-assert 'bib -m title=a -m filename=a -d id' "$(cat bib/$AMD5)" "$(echo 'title\ta\nfilename\ta')"
+assert 'bib -m title=a -m filename=a -d id' "$(cat bib/$AMD5)" "$(echo 'filename\ta\ntitle\ta')"
 $KB bib -d title=b -d filename=a title -eq a
 assert 'bib -d title=b filename=a' "$(cat bib/$AMD5)" "$(echo 'title\ta')"
 $KB bib -s title=b title -eq a
+assert 'bib -s title=b' "$(cat bib/$AMD5)" "$(echo 'title\tb')"
+$KB bib -m title=b title -eq b
 assert 'bib -s title=b' "$(cat bib/$AMD5)" "$(echo 'title\tb')"
 
 [[ -z "$ERR" ]] && echo "All Tests Pass"

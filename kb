@@ -82,7 +82,13 @@ case "$CMD" in
 	INSERTIONS=($INSERTIONS ${UPDATES:#-s})
 	DELETIONS=(${DELETIONS:+$(echo '/'${(j:|:)${(@f)$(printf '%s\n' ${${DELETIONS:#-d}/=/$'\t'} | sed -E 's/[^^]/[&]/g;s/\^/\\^/g;s/\t\]/\\\\t].*/;s/^/\^/')}}'/d')})
 	INSERTIONS=('1 i '${^${INSERTIONS:#-m}/=/$'\t'})	
-	"$SCRIPT" md5 "$@" | md52file bib | if [[ $INSERTIONS$DELETIONS ]]; then xargs sed -Ei ${INSERTIONS:+${E:^^INSERTIONS}} ${E:^DELETIONS}; else xargs cat; fi
+	"$SCRIPT" md5 "$@" | md52file bib | if [[ $INSERTIONS$DELETIONS ]]; then
+	    while read bib; do
+		sed -Ei ${INSERTIONS:+${E:^^INSERTIONS}} ${E:^DELETIONS} "$bib"
+		sort -uo "$bib" "$bib"
+	    done
+	else xargs cat
+	fi
 	;;
     
     import) #; Consumes files in inbox and generates appropriate archival copies, analysis extracts, and metadata containers.
@@ -93,7 +99,7 @@ case "$CMD" in
 	    [[ ! -f "org/$IMPORT_MD5.org" ]] && echo '[[file:../md5/'"$IMPORT_MD5"'.'"$f:e"']['"$f:t:r"']]' > "org/$IMPORT_MD5.org"
 	    [[ ! -f "bib/$IMPORT_MD5" ]] && echo 'filename\t'"$f:t:r"'\ntitle\t'"$f:t:r" > "bib/$IMPORT_MD5"
 	    printf '%s\n' ${${INSERTIONS:#-m}/=/$'\t'} >> "bib/$IMPORT_MD5"
-	    sort -o "bib/$IMPORT_MD5" "bib/$IMPORT_MD5"
+	    sort -uo "bib/$IMPORT_MD5" "bib/$IMPORT_MD5"
 	done
 	;;
     
