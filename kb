@@ -91,8 +91,9 @@ case "$CMD" in
 	    IMPORT_MD5=$(md5sum "$f" | cut -f1 -d' ')
 	    mv "$f" "md5/$IMPORT_MD5.$f:e"
 	    [[ ! -f "org/$IMPORT_MD5.org" ]] && echo '[[file:../md5/'"$IMPORT_MD5"'.'"$f:e"']['"$f:t:r"']]' > "org/$IMPORT_MD5.org"
-	    [[ ! -f "bib/$IMPORT_MD5" ]] && echo 'title\t'"$f:t:r"'\nfilename\t'"$f:t:r" > "bib/$IMPORT_MD5"
+	    [[ ! -f "bib/$IMPORT_MD5" ]] && echo 'filename\t'"$f:t:r"'\ntitle\t'"$f:t:r" > "bib/$IMPORT_MD5"
 	    printf '%s\n' ${${INSERTIONS:#-m}/=/$'\t'} >> "bib/$IMPORT_MD5"
+	    sort -o "bib/$IMPORT_MD5" "bib/$IMPORT_MD5"
 	done
 	;;
     

@@ -46,7 +46,7 @@ touch -d 'Yesterday' org/$BMD5.org
 [[ -f org/$AMD5.org ]] || assert 'import org a'
 assert 'import org link' "$(head -n1 org/$AMD5.org)" '[[file:../md5/'"$AMD5"'.pdf][a]]'
 [[ -f org/$BMD5.org ]] || assert 'import org b'
-assert 'import bib' "$(cat bib/$AMD5)" "$(echo 'title\ta\nfilename\ta\nimport\tbib\nimport2\tbib2')"
+assert 'import bib' "$(cat bib/$AMD5)" "$(echo 'filename\ta\nimport\tbib\nimport2\tbib2\ntitle\ta')"
 
 #md5
 assert 'md5' "$($KB md5)" "$(echo "$CMD5\n$BMD5\n$AMD5")"
@@ -71,7 +71,7 @@ assert 'org redundant query' "$(EDITOR=echo $KB org -i title -eq a)" "$(echo "or
 
 #bib
 $KB bib -d import -d import2 title -eq a
-assert 'bib print' "$($KB bib title -eq a)" "$(echo 'title\ta\nfilename\ta')"
+assert 'bib print' "$($KB bib title -eq a)" "$(echo 'filename\ta\ntitle\ta')"
 $KB bib -d title title -eq a
 assert 'bib -d title' "$(cat bib/$AMD5)" "$(echo 'filename\ta')"
 $KB bib -m title=a filename -eq a
