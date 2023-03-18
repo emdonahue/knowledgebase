@@ -9,6 +9,7 @@
 #TODO add bib formatter for bibtex output
 #TODO make sed case insensitive for substr match
 #TODO guarantee keywords already exist when adding if specified
+#TODO unique the bib entry fields after editing
 
 set -o errexit
 set -o pipefail
@@ -115,7 +116,7 @@ case "$CMD" in
 	;;
 
     open) #QUERY; Opens the document matching QUERY using xdg-open to select an appropriate application.
-	xdg-open md5/$("$SCRIPT" md5 -i "$@").*
+	xdg-open md5/$("$SCRIPT" md5 -rso -i "$@").*
 	;;
     
     org) #QUERY; Opens the org notes file for the document matching QUERY using $EDITOR.

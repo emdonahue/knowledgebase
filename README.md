@@ -28,4 +28,5 @@ Subcommands:
 - add bib formatter for bibtex output
 - make sed case insensitive for substr match
 - guarantee keywords already exist when adding if specified
+- unique the bib entry fields after editing
 - use sed hold space to clip out title, author, year in desired order
