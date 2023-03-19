@@ -19,7 +19,7 @@ kb stores all files as md5 hashes of their contents. Most of its subcommands inv
 Using the `ls` command as a running example, the following example queries demonstrate the range of expressions allowable with this query language:
 
 Search for a substring in a title:
-```
+```zsh
 > ls -q title -eq midsummer
 'A Midsummer Night's Dream'
 ```
