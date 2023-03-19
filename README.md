@@ -16,12 +16,68 @@ kb stores all files as md5 hashes of their contents. Most of its subcommands inv
 --org - Full content search of the org note document.
 ```
 
-Using the `ls` command as a running example, the following example queries demonstrate the range of expressions allowable with this query language:
+Using the `ls` command as a running example, the following example queries demonstrate the range of expressions allowable with this query language. Note that associativity is always left to right, as the query terms are processed in order:
 
 Search for a substring in a title:
 ```zsh
 > ls -q title -eq midsummer
 "A Midsummer Night's Dream"
+```
+
+Search for a substring in a title:
+```zsh
+> ls -q title -eq midsummer
+"A Midsummer Night's Dream"
+```
+
+Search all bibliographic fields:
+```zsh
+> ls -q --bib -eq shakespeare
+"A Midsummer Night's Dream"
+"The Complete Works of William Shakespeare"
+```
+
+Search for files for which your org notes metion the search term
+```zsh
+> ls -q --org -eq shakespeare
+"The Complete Works of William Shakespeare"
+```
+
+Search by title and author:
+```zsh
+> ls -q title -eq midsummer -a author -eq shakespeare
+"A Midsummer Night's Dream"
+```
+
+Search by title or author:
+```zsh
+> ls -q title -eq midsummer -o author -eq 'bob dylan'
+"A Midsummer Night's Dream"
+"Blood on the Tracks"
+```
+
+Use the -i flag in any query to interactively select just one md5 instead of returning the whole list:
+```zsh
+> ls -i -q --bib -eq shakespeare
+1) "A Midsummer Night's Dream"
+2) "The Complete Works of William Shakespeare"
+Type a number ot disambiguate:
+> 1
+"A Midsummer Night's Dream"
+```
+
+Note that because the -a flag joins the subsequent query with stdin, it can be used to insert a custom list of md5s into a query from any manual or automatic process. However, the md5s must be sorted alphabetically.
+
+```zsh
+> echo '99a5d408069900d268c56c79e68a1670\nc6793099238dfa432f0f718b071ee8a5' | sort | ls -a
+"A Midsummer Night's Dream"
+"The Complete Works of William Shakespeare"
+```
+
+Other commands operate on the same query principle. For instance, `bib` applies the modifications to bibliographic data specified using its options to all md5s returned by the query. The following query adds the keyword "plays" to the results of the query.
+
+```zsh
+> bib -m keyword=plays -q title -eq midsummer -a author -eq shakespeare
 ```
 
 ## Documentation
