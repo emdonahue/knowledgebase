@@ -19,9 +19,9 @@ set -o extendedglob
 unset c #Reserved variable for inline comments
 export LC_COLLATE=C
 
-DIRS=(inbox md5 text bib org)
-SCRIPT="$0"
-E=(-e)
+local DIRS=(inbox md5 text bib org)
+local SCRIPT="$0"
+local E=(-e)
 
 function disambiguate() { # Accepts md5s or filenames based on md5s and presents a formatted select, returning a single md5
     local MD5S=("${(@f)$(</dev/stdin)}")
@@ -46,18 +46,20 @@ function query() {
 	*)
 	    case "$2" in
 		-eq|-ne)
+		    local NEGATION=${${2:/-eq/-l}:/-ne/-L}
+		    local PATTERN="$(escapepattern "$3")"
 		    case "$1" in
 			--org)
-			    md52file org org | xargs grep -Ei ${${2:/-eq/-l}:/-ne/-L} "$(escapepattern "$3")" | file2md5 | "$0" "$@[4,-1]";;
+			    md52file org org | xargs grep -Ei "$NEGATION" "$PATTERN";;
 			*)
-			    md52file bib | xargs grep -Ei ${${2:/-eq/-l}:/-ne/-L} '^'"${1:/--bib/[^"$'\t'"]+}"$'\t''.*'"$(escapepattern "$3")" | file2md5 | "$0" "$@[4,-1]";;
-		    esac;;
+			    md52file bib | xargs grep -Ei "$NEGATION" '^'"${1:/--bib/[^"$'\t'"]+}"$'\t''.*'"$PATTERN";;
+		    esac | file2md5 | "$0" "$@[4,-1]";;
 		*) echo "kb: malformed query: $@" >&2 && exit 1;;
 	    esac;;
     esac		
 }
 
-CMD="$1"
+local CMD="$1"
 
 # Ensure proper directory structure
 case "$CMD" in
@@ -96,7 +98,7 @@ case "$CMD" in
     import) #; Consumes files in inbox and generates appropriate archival copies, analysis extracts, and metadata containers.
 	zparseopts -D -E m+:=INSERTIONS ${c#; Apply bibliography records to imported documents. Same as bib -m.}
 	find inbox -type f -print0 | while read -d$'\0' f; do
-	    IMPORT_MD5=$(md5sum "$f" | cut -f1 -d' ')
+	    local IMPORT_MD5=$(md5sum "$f" | cut -f1 -d' ')
 	    mv "$f" "md5/$IMPORT_MD5.$f:e"
 	    [[ ! -f "org/$IMPORT_MD5.org" ]] && echo '[[file:../md5/'"$IMPORT_MD5"'.'"$f:e"']['"$f:t:r"']]' > "org/$IMPORT_MD5.org"
 	    [[ ! -f "bib/$IMPORT_MD5" ]] && echo 'filename\t'"$f:t:r"'\ntitle\t'"$f:t:r" > "bib/$IMPORT_MD5"
@@ -119,8 +121,8 @@ case "$CMD" in
 		   s:=SORT ${c#ORDER; Sorts elements by timestamp. SORT may be any of: i (time imported), o (time opened), n (time notes opened). Because the -a and -o query flags rely on order, do not sort any but the last in a series of joined queries.}\
 		   r=REVERSE ${c#; Reverses sort order}
 	declare -A SORTDIR SORTTIMESTAMP
-	SORTDIR=([o]=md5 [i]=md5 [n]=org)
-	SORTTIMESTAMP=([o]=A [i]=T [n]=T)
+	local SORTDIR=([o]=md5 [i]=md5 [n]=org)
+	local SORTTIMESTAMP=([o]=A [i]=T [n]=T)
 	query ${=${${:--q $1}:/-q -a/-a}:/-q -b/-b} "$@[2,-1]" | {[[ $INTERACTIVE ]] && disambiguate "$SORT[@]" "$REVERSE[@]" || if [[ $SORT ]]; then join - <(find $SORTDIR[$SORT[2]] -type f -printf '%P %'$SORTTIMESTAMP[$SORT[2]]'@\n' | sed 's/\.[^ ]* / /' | sort -k1,1) | sort $REVERSE -nk2,2 | cut -f1 -d' '; else cat; fi}
 	;;
 
@@ -129,7 +131,7 @@ case "$CMD" in
 	;;
     
     org) #QUERY; Opens the org notes file for the document matching QUERY using $EDITOR.
-	ORGFILE=$("$SCRIPT" md5 -rsn -i "$@" | md52file org org)
+	local ORGFILE=$("$SCRIPT" md5 -rsn -i "$@" | md52file org org)
 	[[ $ORGFILE ]] && ${=EDITOR} $ORGFILE
 	;;
     
