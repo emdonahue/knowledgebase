@@ -21,7 +21,7 @@ Using the `ls` command as a running example, the following example queries demon
 Search for a substring in a title:
 ```zsh
 > ls -q title -eq midsummer
-'A Midsummer Night's Dream'
+"A Midsummer Night's Dream"
 ```
 
 ## Documentation
