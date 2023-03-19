@@ -9,7 +9,6 @@
 #TODO add bib formatter for bibtex output
 #TODO make sed case insensitive for substr match
 #TODO guarantee keywords already exist when adding if specified
-#TODO unique the bib entry fields after editing
 
 set -o errexit
 set -o pipefail
@@ -47,7 +46,7 @@ function query() {
 	*)
 	    case "$2" in
 		-eq|-ne)
-		    md52file bib | xargs grep -Ei ${${2:/-eq/-l}:/-ne/-L} '^'"$1"$'\t''.*'"$(escapepattern "$3")" | file2md5 | "$0" "$@[4,-1]"
+		    md52file bib | xargs grep -Ei ${${2:/-eq/-l}:/-ne/-L} '^'"${1:/--bib/[^"$'\t'"]+}"$'\t''.*'"$(escapepattern "$3")" | file2md5 | "$0" "$@[4,-1]"
 		    ;;
 		*) echo "kb: malformed query: $@" >&2 && exit 1;;
 	    esac 
