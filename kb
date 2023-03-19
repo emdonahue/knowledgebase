@@ -43,6 +43,7 @@ function query() {
 	-a) "$0" "$@[2,-1]";;
 	-o) join -a1 -a2 - <("$0" -q "$@[2,-1]");;
 	-q) ls bib | "$0" "$@[2,-1]";;
+	--subq) cat "$2" | "$0" "$@[3,-1]";;
 	-eq|-ne)
 	    local NEGATION=${${1:/-eq/-l}:/-ne/-L}
 	    local PATTERN="$(escapepattern "$3")"

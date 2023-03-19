@@ -7,69 +7,70 @@ A new knowledgebase can be created with `kb init`, which generates the directory
 kb stores all files as md5 hashes of their contents. Most of its subcommands involve querying a list of those md5s by metadata or content, and then postprocessing that list to, for instance, display a list of titles, open a notes file in an editor, etc. Consequently, most commands accept a QUERY, which can be composed from the following operators inspired by the unix `test` command:
 
 ```
--q - Begins a query. Usually optional.
--a - Logical "and".
--o - Logical "or".
--eq - Equals. Searches for a substring in a specified metadata field or content block.
--ne - Not equals. Inverts results of -eq.
---bib - Wildcard specifying a match with any metadata field in the bibliography file.
---org - Full content search of the org note document.
+-q QUERY -- Begins a query. Usually optional.
+-a QUERY -- Logical "and".
+-o QUERY -- Logical "or".
+A -eq B or -eq A B -- Equals. Searches for a substring in a specified metadata field or content block.
+A -ne B or -ne A B -- Not equals. Inverts results of -eq.
+--bib -eq A or --bib ne A -- Wildcard specifying a match with any metadata field in the bibliography file.
+--org -eq A or --org -ne A -- Full content search of the org note document.
+--subq FILE -- Subquery. Reads md5s from FILE.
 ```
 
 Using the `ls` command as a running example, the following example queries demonstrate the range of expressions allowable with this query language. Note that associativity is always left to right, as the query terms are processed in order:
 
 Search for a substring in a title:
 ```zsh
-> ls -q title -eq midsummer
+> kb ls -q title -eq midsummer
 "A Midsummer Night's Dream"
 ```
 
 Search for a substring in a title:
 ```zsh
-> ls -q title -eq midsummer
+> kb ls -q title -eq midsummer
 "A Midsummer Night's Dream"
 ```
 
 Search all bibliographic fields:
 ```zsh
-> ls -q --bib -eq shakespeare
+> kb ls -q --bib -eq shakespeare
 "A Midsummer Night's Dream"
 "The Complete Works of William Shakespeare"
 ```
 
 Search for files for which your org notes metion the search term
 ```zsh
-> ls -q --org -eq shakespeare
+> kb ls -q --org -eq shakespeare
 "The Complete Works of William Shakespeare"
 ```
 
 Search by title and author:
 ```zsh
-> ls -q title -eq midsummer -a author -eq shakespeare
+> kb ls -q title -eq midsummer -a author -eq shakespeare
 "A Midsummer Night's Dream"
 ```
 
 Search by title or author:
 ```zsh
-> ls -q title -eq midsummer -o author -eq 'bob dylan'
+> kb ls -q title -eq midsummer -o author -eq 'bob dylan'
 "A Midsummer Night's Dream"
 "Blood on the Tracks"
 ```
 
 Use the -i flag in any query to interactively select just one md5 instead of returning the whole list:
 ```zsh
-> ls -i -q --bib -eq shakespeare
+> kb ls -i -q --bib -eq shakespeare
 1) "A Midsummer Night's Dream"
 2) "The Complete Works of William Shakespeare"
 Type a number ot disambiguate:
-> 1
+> kb 1
 "A Midsummer Night's Dream"
 ```
 
 Note that because the -a and -o flags join the subsequent query with stdin, they can be used to pipe a custom list of md5s into a query from any manual or automatic process. However, the md5s must be sorted alphabetically. Note also that -q is omitted since this is not the beginning of a new query but rather a subquery within a larger query.
 
 ```zsh
-> echo '99a5d408069900d268c56c79e68a1670\nc6793099238dfa432f0f718b071ee8a5' | sort | ls -a
+> echo '99a5d408069900d268c56c79e68a1670\nc6793099238dfa432f0f718b071ee8a5' | sort | kb ls -a
 "A Midsummer Night's Dream"
 "The Complete Works of William Shakespeare"
 ```
@@ -77,7 +78,14 @@ Note that because the -a and -o flags join the subsequent query with stdin, they
 Other commands operate on the same query principle. For instance, `bib` applies the modifications to bibliographic data specified using its options to all md5s returned by the query. The following query adds the keyword "plays" to the results of the query.
 
 ```zsh
-> bib -m keyword=plays -q title -eq midsummer -a author -eq shakespeare
+> kb bib -m keyword=plays -q title -eq midsummer -a author -eq shakespeare
+```
+
+For complex queries that require grouping, use --subq to compose subqueries along with the `md5` subcommand to search over raw md5s. For instance, to query (author1 OR author2) AND (title1 OR title2):
+```zsh
+> kb ls -q title -eq midsummer -o -title -eq tracks -a --subq <(kb md5 -q author -eq 'bob dylan' -o author -eq shakespeare)
+"A Midsummer Night's Dream"
+"Blood on the Tracks"
 ```
 
 ## Documentation
