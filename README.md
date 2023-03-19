@@ -1,7 +1,28 @@
 # kb
 A set of utilities for creating a personal, text-minable knowledgebase out of your pdfs, documents, and notes.
 
-A new knowledgebase can be created with `kb init`, which generates the directory structure used by the various utilities. PDFs and other document typse can be dowloaded into the "inbox" directory, and then processed by visiting the root of the knowledgebase directory and running `kb ingest`. Once documents have been processed, the various other utilities can be used to search, annotate, and analyze the collection. Knowledgebases can be created per project, or as one all-purpose knowledgebase for research notes.
+A new knowledgebase can be created with `kb init`, which generates the directory structure used by the various utilities. PDFs and other document typse can be dowloaded into the "inbox" directory, and then processed by visiting the root of the knowledgebase directory and running `kb import`. Once documents have been processed, the various other utilities can be used to search, annotate, and analyze the collection. Knowledgebases can be created per project, or as one all-purpose knowledgebase for research notes.
+
+## Querying
+kb stores all files as md5 hashes of their contents. Most of its subcommands involve querying a list of those md5s by metadata or content, and then postprocessing that list to, for instance, display a list of titles, open a notes file in an editor, etc. Consequently, most commands accept a QUERY, which can be composed from the following operators inspired by the unix `test` command:
+
+```
+-q - Begins a query. Usually optional.
+-a - Logical "and".
+-o - Logical "or".
+-eq - Equals. Searches for a substring in a specified metadata field or content block.
+-ne - Not equals. Inverts results of -eq.
+--bib - Wildcard specifying a match with any metadata field in the bibliography file.
+--org - Full content search of the org note document.
+```
+
+Using the `ls` command as a running example, the following example queries demonstrate the range of expressions allowable with this query language:
+
+Search for a substring in a title:
+```zsh
+> ls -q title -eq midsummer
+A Midsummer Night's Dream
+``
 
 ## Documentation
 ```
