@@ -1,13 +1,12 @@
 #!/bin/zsh
 
-#TODO add options to ls to display different columns
+#TODO add options to ls to display different columns (use awk)
 #TODO handle multiple filetypes that get added with same md5 (rtf and txt)
 #TODO handle merging versions of the same bibliographic item (symlink notes and bib?)
 #TODO add search by md5
 #TODO add dates to query language
 #TODO add regex alongside -eq, maybe -re
 #TODO add bib formatter for bibtex output
-#TODO make sed case insensitive for substr match
 #TODO guarantee keywords already exist when adding if specified
 
 set -o errexit
@@ -35,7 +34,7 @@ function disambiguate() { # Accepts md5s or filenames based on md5s and presents
 
 function file2md5() { sed -E 's_^(.*/)*([[:alnum:]]+)(\..*)?$_\2_' }
 function md52file() { sed -E 's_.*_'"$1"'/&'"${2:+.$2}"'_' }
-function escapepattern() { sed -E 's/[^^]/[&]/g;s/\^/\\^/g' <<< "$1" }
+function escapepattern() { sed -E 's/[^^]/[\L&\U&]/g;s/\^/\\^/g' <<< "$1" }
 
 function query() {
     case "$1" in
