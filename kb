@@ -37,24 +37,22 @@ function md52file() { sed -E 's_.*_'"$1"'/&'"${2:+.$2}"'_' }
 function escapepattern() { sed -E 's/[^^]/[\L&\U&]/g;s/\^/\\^/g' <<< "$1" }
 
 function query() {
+    [[ "$2" == -eq || "$2" == -ne ]] && "$0" "$2" "$1" "$@[3,-1]" && return
     case "$1" in
 	'') cat;;
 	-a) "$0" "$@[2,-1]";;
 	-o) join -a1 -a2 - <("$0" -q "$@[2,-1]");;
 	-q) ls bib | "$0" "$@[2,-1]";;
-	*)
+	-eq|-ne)
+	    local NEGATION=${${1:/-eq/-l}:/-ne/-L}
+	    local PATTERN="$(escapepattern "$3")"
 	    case "$2" in
-		-eq|-ne)
-		    local NEGATION=${${2:/-eq/-l}:/-ne/-L}
-		    local PATTERN="$(escapepattern "$3")"
-		    case "$1" in
-			--org)
-			    md52file org org | xargs grep -Ei "$NEGATION" "$PATTERN";;
-			*)
-			    md52file bib | xargs grep -Ei "$NEGATION" '^'"${1:/--bib/[^"$'\t'"]+}"$'\t''.*'"$PATTERN";;
-		    esac | file2md5 | "$0" "$@[4,-1]";;
-		*) echo "kb: malformed query: $@" >&2 && exit 1;;
-	    esac;;
+		--org)
+		    md52file org org | xargs grep -Ei "$NEGATION" "$PATTERN";;
+		*)
+		    md52file bib | xargs grep -Ei "$NEGATION" '^'"${2:/--bib/[^"$'\t'"]+}"$'\t''.*'"$PATTERN";;
+	    esac | file2md5 | "$0" "$@[4,-1]";;
+	*) echo "kb: malformed query: $@" >&2 && exit 1;;
     esac		
 }
 
