@@ -66,7 +66,7 @@ Type a number ot disambiguate:
 "A Midsummer Night's Dream"
 ```
 
-Note that because the -a flag joins the subsequent query with stdin, it can be used to insert a custom list of md5s into a query from any manual or automatic process. However, the md5s must be sorted alphabetically.
+Note that because the -a and -o flags join the subsequent query with stdin, they can be used to pipe a custom list of md5s into a query from any manual or automatic process. However, the md5s must be sorted alphabetically. Note also that -q is omitted since this is not the beginning of a new query but rather a subquery within a larger query.
 
 ```zsh
 > echo '99a5d408069900d268c56c79e68a1670\nc6793099238dfa432f0f718b071ee8a5' | sort | ls -a
