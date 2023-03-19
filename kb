@@ -37,7 +37,6 @@ function md52file() { sed -E 's_.*_'"$1"'/&'"${2:+.$2}"'_' }
 function escapepattern() { sed -E 's/[^^]/[\L&\U&]/g;s/\^/\\^/g' <<< "$1" }
 
 function query() {
-    [[ "$2" == -eq || "$2" == -ne ]] && "$0" "$2" "$1" "$@[3,-1]" && return
     case "$1" in
 	'') cat;;
 	-a) "$0" "$@[2,-1]";;
@@ -53,7 +52,7 @@ function query() {
 		*)
 		    md52file bib | xargs grep -Ei "$NEGATION" '^'"${2:/--bib/[^"$'\t'"]+}"$'\t''.*'"$PATTERN";;
 	    esac | file2md5 | "$0" "$@[4,-1]";;
-	*) echo "kb: malformed query: $@" >&2 && exit 1;;
+	*) [[ "$2" == -eq || "$2" == -ne ]] && "$0" "$2" "$1" "$@[3,-1]" || echo "kb: malformed query: $@" >&2 && exit 1;;
     esac		
 }
 
