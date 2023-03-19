@@ -46,11 +46,14 @@ function query() {
 	*)
 	    case "$2" in
 		-eq|-ne)
-		    md52file bib | xargs grep -Ei ${${2:/-eq/-l}:/-ne/-L} '^'"${1:/--bib/[^"$'\t'"]+}"$'\t''.*'"$(escapepattern "$3")" | file2md5 | "$0" "$@[4,-1]"
-		    ;;
+		    case "$1" in
+			--org)
+			    md52file org org | xargs grep -Ei ${${2:/-eq/-l}:/-ne/-L} "$(escapepattern "$3")" | file2md5 | "$0" "$@[4,-1]";;
+			*)
+			    md52file bib | xargs grep -Ei ${${2:/-eq/-l}:/-ne/-L} '^'"${1:/--bib/[^"$'\t'"]+}"$'\t''.*'"$(escapepattern "$3")" | file2md5 | "$0" "$@[4,-1]";;
+		    esac;;
 		*) echo "kb: malformed query: $@" >&2 && exit 1;;
-	    esac 
-	    ;;
+	    esac;;
     esac		
 }
 
