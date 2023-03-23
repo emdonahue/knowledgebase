@@ -84,12 +84,12 @@ case "$CMD" in
 
     bib) #[OPTION...] QUERY; Adds or removes records from the bibliography files identified by QUERY. If addition/deletion options are not supplied, print bibliographic data instead.
 	zparseopts -D -E d+:=DELETIONS ${c#KEY[=VALUE]; Deletes all fields matching KEY from the bibliography files matching QUERY. If VALUE is provided, only delete fields both matching KEY and conatining VALUE. Can be supplied multiple times for different KEYS and VALUES.}\
-		   m+:=INSERTIONS ${c#KEY=VALUE; Inserts VALUE under KEY in bibliography files matching QUERY. -m is for multiple entry. To overwrite previous entries, use -s. Can be supplied multiple times for different KEYS and VALUES}\
-		   s+:=UPDATES ${c#KEY=VALUE; Combines -d and -m to delete all previous values for KEY and set KEY to VALUE.}
+		   k+:=INSERTIONS ${c#KEY=VALUE; Inserts VALUE under KEY in bibliography files matching QUERY. To overwrite previous entries, use -s. Can be supplied multiple times for different KEYS and VALUES}\
+		   s+:=UPDATES ${c#KEY=VALUE; Combines -d and -k to delete all previous values for KEY and set KEY to VALUE.}
 	DELETIONS=($DELETIONS ${${UPDATES:#-s}%%=*})
 	INSERTIONS=($INSERTIONS ${UPDATES:#-s})
 	DELETIONS=(${DELETIONS:+$(echo '/'${(j:|:)${(@f)$(printf '%s\n' ${${DELETIONS:#-d}/=/$'\t'} | sed -E 's/[^^]/[&]/g;s/\^/\\^/g;s/\t\]/\\\\t].*/;s/^/\^/')}}'/d')})
-	INSERTIONS=('1 i '${^${INSERTIONS:#-m}/=/$'\t'})	
+	INSERTIONS=('1 i '${^${INSERTIONS:#-k}/=/$'\t'})	
 	"$SCRIPT" md5 "$@" | md52file bib | if [[ $INSERTIONS$DELETIONS ]]; then
 	    while read bib; do
 		sed -Ei ${INSERTIONS:+${E:^^INSERTIONS}} ${E:^DELETIONS} "$bib"
@@ -100,13 +100,13 @@ case "$CMD" in
 	;;
     
     import) #; Consumes files in inbox and generates appropriate archival copies, analysis extracts, and metadata containers. Automatically adds both a title and a filename field to the bibliography, both corresponding to the original filename.
-	zparseopts -D -F m+:=INSERTIONS ${c#; Apply bibliography records to imported documents. Same as bib -m.}
+	zparseopts -D -F k+:=INSERTIONS ${c#; Apply bibliography keys to imported documents. Same as bib -k.}
 	find inbox -type f -print0 | while read -d$'\0' f; do
 	    local IMPORT_MD5=$(md5sum "$f" | cut -f1 -d' ')
 	    mv "$f" "md5/$IMPORT_MD5.$f:e"
 	    [[ ! -f "org/$IMPORT_MD5.org" ]] && echo '[[file:../md5/'"$IMPORT_MD5"'.'"$f:e"']['"$f:t:r"']]' > "org/$IMPORT_MD5.org"
 	    [[ ! -f "bib/$IMPORT_MD5" ]] && echo 'filename\t'"$f:t:r"'\ntitle\t'"$f:t:r" > "bib/$IMPORT_MD5"
-	    printf '%s\n' ${${INSERTIONS:#-m}/=/$'\t'} >> "bib/$IMPORT_MD5"
+	    printf '%s\n' ${${INSERTIONS:#-k}/=/$'\t'} >> "bib/$IMPORT_MD5"
 	    sort -uo "bib/$IMPORT_MD5" "bib/$IMPORT_MD5"
 	done
 	;;
