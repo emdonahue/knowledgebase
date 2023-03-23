@@ -99,7 +99,7 @@ case "$CMD" in
 	fi
 	;;
     
-    import) #; Consumes files in inbox and generates appropriate archival copies, analysis extracts, and metadata containers.
+    import) #; Consumes files in inbox and generates appropriate archival copies, analysis extracts, and metadata containers. Automatically adds both a title and a filename field to the bibliography, both corresponding to the original filename.
 	zparseopts -D -F m+:=INSERTIONS ${c#; Apply bibliography records to imported documents. Same as bib -m.}
 	find inbox -type f -print0 | while read -d$'\0' f; do
 	    local IMPORT_MD5=$(md5sum "$f" | cut -f1 -d' ')
@@ -119,8 +119,7 @@ case "$CMD" in
 	local BIBKEYS=(title)
 	zparseopts -D -E -K c+:=BIBKEYS ${c#BIBkEY; Adds a bibliography key as a column in the output. Default is title. Adding new keys with -c will overwrite the defaults, but -c may be called multiple times. Special column name "md5" prints the md5 of the file.}\
 		   h=HEADERS ${c#; Prints column headers.}
-	"$SCRIPT" md5 -sn "$@" | md52file bib | xargs awk -vFS='\t' -vOFS='\t' -vBIBKEYS="${(j:\t:)BIBKEYS:/-c}" -vHEADERS=$#HEADERS 'BEGIN {if (HEADERS) print BIBKEYS; split(BIBKEYS,hs,"\t")} {keys[$1]=$2} ENDFILE {keys[md5]=FILENAME; for (i=1;i<=length(hs);i++) printf("%s%s",keys[hs[i]],i==length(hs)?RS:FS); delete keys}'
-	    #xargs sed -nE 's/^title'$'\t''(.*)/\1/p'
+	"$SCRIPT" md5 -sn "$@" | md52file bib | xargs awk -vFS='\t' -vOFS='\t' -vBIBKEYS=${(j:\t:)BIBKEYS:#-c} -vHEADERS=$#HEADERS 'BEGIN {if (HEADERS) print BIBKEYS; split(BIBKEYS,hs,"\t")} {keys[$1]=$2} ENDFILE {keys["md5"]=substr(FILENAME,index(FILENAME,"/")+1); for (i=1;i<=length(hs);i++) printf("%s%s",keys[hs[i]],i==length(hs)?RS:FS); delete keys}'
 	;;
 
     md5) #[QUERY]; Prints md5s of files matching QUERY. If QUERY is omitted, print all md5s.

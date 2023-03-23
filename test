@@ -69,6 +69,8 @@ assert 'md5 -sir' "$($KB md5 -rsi)" "$(echo "$CMD5\n$BMD5\n$AMD5")"
 #ls
 assert 'ls' "$($KB ls)" "$(echo 'a\nb\nc')"
 assert 'ls stdin' "$(echo "$AMD5" | $KB ls -a)" "$(echo "a")"
+assert 'ls metadata' "$($KB ls -c filename -c md5)" "$(echo "a\t$AMD5\nb\t$BMD5\nc\t$CMD5")"
+assert 'ls header' "$($KB ls -h -c filename -c md5)" "$(echo "filename\tmd5\na\t$AMD5\nb\t$BMD5\nc\t$CMD5")"
 
 #org
 assert 'org' "$(EDITOR=echo $KB org title -eq a)" "$(echo "org/$AMD5.org")"
