@@ -96,9 +96,9 @@ Usage: kb SUBCOMMAND [ARGUMENTS...]
 Subcommands:
 	--help|-h|help [SUBCOMMAND]	Prints help text for SUBCOMMAND. If SUBCOMMAND omitted, prints list of subcommands.
 	bib [OPTION...] QUERY	Adds or removes records from the bibliography files identified by QUERY. If addition/deletion options are not supplied, print bibliographic data instead.
-	import 	Consumes files in inbox and generates appropriate archival copies, analysis extracts, and metadata containers.
+	import 	Consumes files in inbox and generates appropriate archival copies, analysis extracts, and metadata containers. Automatically adds both a title and a filename field to the bibliography, both corresponding to the original filename.
 	init 	Generates a new directory structure for use by kb in the current directory.
-	ls [QUERY]	Lists files matching QUERY. If QUERY omitted, list all files.
+	ls [QUERY]	Prints a TSV of files matching QUERY. If QUERY omitted, list all files.
 	md5 [QUERY]	Prints md5s of files matching QUERY. If QUERY is omitted, print all md5s.
 	open QUERY	Opens the document matching QUERY using xdg-open to select an appropriate application.
 	org QUERY	Opens the org notes file for the document matching QUERY using $EDITOR.
@@ -112,4 +112,3 @@ Subcommands:
 - add regex alongside -eq, maybe -re
 - add bib formatter for bibtex output
 - guarantee keywords already exist when adding if specified
-- use sed hold space to clip out title, author, year in desired order
