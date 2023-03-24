@@ -1,6 +1,5 @@
 #!/bin/zsh
 
-#TODO add options to ls to display different columns (use awk)
 #TODO handle multiple filetypes that get added with same md5 (rtf and txt)
 #TODO handle merging versions of the same bibliographic item (symlink notes and bib?)
 #TODO add search by md5

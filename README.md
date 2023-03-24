@@ -3,7 +3,7 @@ A set of utilities for creating a personal, text-minable knowledgebase out of yo
 
 A new knowledgebase can be created with `kb init`, which generates the directory structure used by the various utilities. PDFs and other document typse can be dowloaded into the "inbox" directory, and then processed by visiting the root of the knowledgebase directory and running `kb import`. Once documents have been processed, the various other utilities can be used to search, annotate, and analyze the collection. Knowledgebases can be created per project, or as one all-purpose knowledgebase for research notes.
 
-`kb init` also generates, in addition to the requisite directory structure, a `.config` file with settings that can be altered to control the default behavior when dealing with this knowledgebase. Configurable behaviors are documented in the [Configuration](#-configuration) section.
+`kb init` also generates, in addition to the requisite directory structure, a `.config` file with settings that can be altered to control the default behavior when dealing with this knowledgebase. Configurable behaviors are documented in the [Configuration](#configuration) section.
 
 ## Querying
 kb stores all files as md5 hashes of their contents. Most of its subcommands involve querying a list of those md5s by metadata or content, and then postprocessing that list to, for instance, display a list of titles, open a notes file in an editor, etc. Consequently, most commands accept a QUERY, which can be composed from the following operators inspired by the unix `test` command:
@@ -109,7 +109,6 @@ Subcommands:
 LS_COLUMNS=(title) #Default columns printed by ls.
 ```
 ## TODO
-- add options to ls to display different columns (use awk)
 - handle multiple filetypes that get added with same md5 (rtf and txt)
 - handle merging versions of the same bibliographic item (symlink notes and bib?)
 - add search by md5
