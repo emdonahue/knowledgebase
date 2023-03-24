@@ -105,7 +105,9 @@ Subcommands:
 	org QUERY	Opens the org notes file for the document matching QUERY using $EDITOR.
 ```
 ## Configuration
+```
 LS_COLUMNS=(title) #Default columns printed by ls.
+```
 ## TODO
 - add options to ls to display different columns (use awk)
 - handle multiple filetypes that get added with same md5 (rtf and txt)
