@@ -70,8 +70,9 @@ case "$CMD" in
     -h|--help|help|init);;
     *)
 	for f in "${DIRS[@]}"; do
-	    [[ -d "$f" ]] || {echo 'kb directory structure not detected. Use "kb init" to create a new directory structure.' >&2; exit 1}
+	    [[ -d "$f" && -f .config ]] || {echo 'kb directory structure not detected. Use "kb init" to create a new directory structure.' >&2; exit 1}
 	done
+	source .config
 	;;
 esac
 
@@ -113,13 +114,15 @@ case "$CMD" in
     
     init) #; Generates a new directory structure for use by kb in the current directory.
 	mkdir -p "${DIRS[@]}"
+	if [[ ! -f .config ]]; then
+	    echo "LS_COLUMNS=(title) #Default columns printed by ls." > .config
+	fi
 	;;
 
     ls) #[QUERY]; Prints a TSV of files matching QUERY. If QUERY omitted, list all files.
-	local BIBKEYS=(title)
-	zparseopts -D -E -K c+:=BIBKEYS ${c#BIBkEY; Adds a bibliography key as a column in the output. Default is title. Adding new keys with -c will overwrite the defaults, but -c may be called multiple times. Special column name "md5" prints the md5 of the file.}\
+	zparseopts -D -E -K c+:=LS_COLUMNS ${c#BIBkEY; Adds a bibliography key as a column in the output. Default is title. Adding new keys with -c will overwrite the defaults, but -c may be called multiple times. Special column name "md5" prints the md5 of the file.}\
 		   h=HEADERS ${c#; Prints column headers.}
-	"$SCRIPT" md5 -sn "$@" | md52file bib | xargs awk -vFS='\t' -vOFS='\t' -vBIBKEYS=${(j:\t:)BIBKEYS:#-c} -vHEADERS=$#HEADERS 'BEGIN {if (HEADERS) print BIBKEYS; split(BIBKEYS,hs,"\t")} {keys[$1]=$2} ENDFILE {keys["md5"]=substr(FILENAME,index(FILENAME,"/")+1); for (i=1;i<=length(hs);i++) printf("%s%s",keys[hs[i]],i==length(hs)?RS:FS); delete keys}'
+	"$SCRIPT" md5 -sn "$@" | md52file bib | xargs awk -vFS='\t' -vOFS='\t' -vLS_COLUMNS=${(j:\t:)LS_COLUMNS:#-c} -vHEADERS=$#HEADERS 'BEGIN {if (HEADERS) print LS_COLUMNS; split(LS_COLUMNS,hs,"\t")} {keys[$1]=$2} ENDFILE {keys["md5"]=substr(FILENAME,index(FILENAME,"/")+1); for (i=1;i<=length(hs);i++) printf("%s%s",keys[hs[i]],i==length(hs)?RS:FS); delete keys}'
 	;;
 
     md5) #[QUERY]; Prints md5s of files matching QUERY. If QUERY is omitted, print all md5s.
