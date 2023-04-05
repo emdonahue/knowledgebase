@@ -100,14 +100,18 @@ case "$CMD" in
 	;;
     
     import) #; Consumes files in inbox and generates appropriate archival copies, analysis extracts, and metadata containers. Automatically adds both a title and a filename field to the bibliography, both corresponding to the original filename.
-	zparseopts -D -F k+:=INSERTIONS ${c#; Apply bibliography keys to imported documents. Same as bib -k.}
+	zparseopts -D -F d+:=BIBCMDS ${c#; Delete bibliography keys from imported documents. Same as bib -d.}\
+		   k+:=BIBCMDS ${c#; Add bibliography keys to imported documents. Same as bib -k.}\
+		   s+:=BIBCMDS ${c#; Set bibliography keys on imported documents. Same as bib -s.}
 	find inbox -type f -print0 | while read -d$'\0' f; do
 	    local IMPORT_MD5=$(md5sum "$f" | cut -f1 -d' ')
 	    mv "$f" "md5/$IMPORT_MD5.$f:e"
 	    [[ ! -f "org/$IMPORT_MD5.org" ]] && echo '[[file:../md5/'"$IMPORT_MD5"'.'"$f:e"']['"$f:t:r"']]' > "org/$IMPORT_MD5.org"
 	    [[ ! -f "bib/$IMPORT_MD5" ]] && echo 'filename\t'"$f:t:r"'\ntitle\t'"$f:t:r" > "bib/$IMPORT_MD5"
-	    printf '%s\n' ${${INSERTIONS:#-k}/=/$'\t'} >> "bib/$IMPORT_MD5"
-	    sort -uo "bib/$IMPORT_MD5" "bib/$IMPORT_MD5"
+	    if [[ "$BIBCMDS" ]]; then
+		"$0" bib "${BIBCMDS[@]}" -a <<< "$IMPORT_MD5"
+		sort -uo "bib/$IMPORT_MD5" "bib/$IMPORT_MD5"
+	    fi
 	done
 	;;
     
