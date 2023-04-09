@@ -139,7 +139,8 @@ case "$CMD" in
 	;;
 
     open) #QUERY; Opens the document matching QUERY using xdg-open to select an appropriate application.
-	xdg-open md5/$("$SCRIPT" md5 -rso -i "$@").*
+	OPENFILE=$("$SCRIPT" md5 -rso -i "$@")
+	[[ "$OPENFILE" ]] && xdg-open md5/"$OPENFILE".*	
 	;;
     
     org) #QUERY; Opens the org notes file for the document matching QUERY using $EDITOR.
