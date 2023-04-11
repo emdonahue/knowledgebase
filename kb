@@ -88,9 +88,10 @@ case "$CMD" in
 		   k+:=INSERTIONS ${c#KEY=VALUE; Inserts VALUE under KEY in bibliography files matching QUERY. To overwrite previous entries, use -s. Can be supplied multiple times for different KEYS and VALUES}\
 		   s+:=UPDATES ${c#KEY=VALUE; Combines -d and -k to delete all previous values for KEY and set KEY to VALUE.}
 	DELETIONS=($DELETIONS ${${UPDATES:#-s}%%=*})
-	INSERTIONS=($INSERTIONS ${UPDATES:#-s})
+	INSERTIONS=(${INSERTIONS:#-k} ${UPDATES:#-s})
+	for ins in "$INSERTIONS[@]"; do [[ ! "$ins" =~ '=' ]] && echo "kb: malformed bibliographic update: $ins" >&2 && exit 1; done
 	DELETIONS=(${DELETIONS:+$(echo '/'${(j:|:)${(@f)$(printf '%s\n' ${${DELETIONS:#-d}/=/$'\t'} | sed -E 's/[^^]/[&]/g;s/\^/\\^/g;s/\t\]/\\\\t].*/;s/^/\^/')}}'/d')})
-	INSERTIONS=('1 i '${^${INSERTIONS:#-k}/=/$'\t'})	
+	INSERTIONS=('1 i '${^${INSERTIONS}/=/$'\t'})	
 	"$SCRIPT" md5 "$@" | md52file bib | if [[ $INSERTIONS$DELETIONS ]]; then
 	    while read bib; do
 		sed -Ei ${INSERTIONS:+${E:^^INSERTIONS}} ${E:^DELETIONS} "$bib"

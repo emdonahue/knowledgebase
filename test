@@ -83,6 +83,7 @@ assert 'org redundant query' "$(EDITOR=echo $KB org -i title -eq a)" "$(echo "or
 #bib
 $KB bib -d import -d import2 title -eq a
 assert 'bib print' "$($KB bib title -eq a)" "$(echo 'filename\ta\ntitle\ta')"
+assert 'bib malformedness check' "$($KB bib -k title 2>&1)" 'kb: malformed bibliographic update: title'
 $KB bib -d title title -eq a
 assert 'bib -d title' "$(cat bib/$AMD5)" "$(echo 'filename\ta')"
 $KB bib -k title=a filename -eq a
