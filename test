@@ -67,13 +67,13 @@ assert 'md5 -si' "$($KB md5 -si)" "$(echo "$AMD5\n$BMD5\n$CMD5")"
 assert 'md5 -sir' "$($KB md5 -rsi)" "$(echo "$CMD5\n$BMD5\n$AMD5")"
 
 #ls
-assert 'ls' "$($KB ls)" "$(echo 'a\nb\nc')"
+assert 'ls' "$($KB ls)" "$(echo 'c\nb\na')"
 assert 'ls stdin' "$(echo "$AMD5" | $KB ls -a)" "$(echo "a")"
-assert 'ls metadata' "$($KB ls -c filename -c md5)" "$(echo "a\t$AMD5\nb\t$BMD5\nc\t$CMD5")"
-assert 'ls header' "$($KB ls -h -c filename -c md5)" "$(echo "filename\tmd5\na\t$AMD5\nb\t$BMD5\nc\t$CMD5")"
+assert 'ls metadata' "$($KB ls -c filename -c md5)" "$(echo "c\t$CMD5\nb\t$BMD5\na\t$AMD5")"
+assert 'ls header' "$($KB ls -h -c filename -c md5)" "$(echo "filename\tmd5\nc\t$CMD5\nb\t$BMD5\na\t$AMD5")"
 cp .config .config-old
 echo 'LS_COLUMNS=(filename md5)' > .config
-assert 'ls config' "$($KB ls)" "$(echo "a\t$AMD5\nb\t$BMD5\nc\t$CMD5")"
+assert 'ls config' "$($KB ls)" "$(echo "c\t$CMD5\nb\t$BMD5\na\t$AMD5")"
 mv .config-old .config
 
 #org

@@ -7,6 +7,7 @@
 #TODO add regex alongside -eq, maybe -re
 #TODO add bib formatter for bibtex output
 #TODO guarantee keywords already exist when adding if specified
+#TODO make bib break if fields dont have "="
 
 set -o errexit
 set -o pipefail
@@ -125,7 +126,7 @@ case "$CMD" in
     ls) #[QUERY]; Prints a TSV of files matching QUERY. If QUERY omitted, list all files.
 	zparseopts -D -E -K c+:=LS_COLUMNS ${c#BIBkEY; Adds a bibliography key as a column in the output. Default is title. Adding new keys with -c will overwrite the defaults, but -c may be called multiple times. Special column name "md5" prints the md5 of the file.}\
 		   h=HEADERS ${c#; Prints column headers.}
-	"$SCRIPT" md5 -sn "$@" | md52file bib | xargs awk -vFS='\t' -vOFS='\t' -vLS_COLUMNS=${(j:\t:)LS_COLUMNS:#-c} -vHEADERS=$#HEADERS 'BEGIN {if (HEADERS) print LS_COLUMNS; split(LS_COLUMNS,hs,"\t")} {keys[$1]=$2} ENDFILE {keys["md5"]=substr(FILENAME,index(FILENAME,"/")+1); for (i=1;i<=length(hs);i++) printf("%s%s",keys[hs[i]],i==length(hs)?RS:FS); delete keys}'
+	"$SCRIPT" md5 "$@" | md52file bib | xargs awk -vFS='\t' -vOFS='\t' -vLS_COLUMNS=${(j:\t:)LS_COLUMNS:#-c} -vHEADERS=$#HEADERS 'BEGIN {if (HEADERS) print LS_COLUMNS; split(LS_COLUMNS,hs,"\t")} {keys[$1]=$2} ENDFILE {keys["md5"]=substr(FILENAME,index(FILENAME,"/")+1); for (i=1;i<=length(hs);i++) printf("%s%s",keys[hs[i]],i==length(hs)?RS:FS); delete keys}'
 	;;
 
     md5) #[QUERY]; Prints md5s of files matching QUERY. If QUERY is omitted, print all md5s.
@@ -140,7 +141,7 @@ case "$CMD" in
 
     open) #QUERY; Opens the document matching QUERY using xdg-open to select an appropriate application.
 	OPENFILE=$("$SCRIPT" md5 -rso -i "$@")
-	[[ "$OPENFILE" ]] && xdg-open md5/"$OPENFILE".*	
+	[[ $OPENFILE ]] && xdg-open md5/"$OPENFILE".*	
 	;;
     
     org) #QUERY; Opens the org notes file for the document matching QUERY using $EDITOR.
