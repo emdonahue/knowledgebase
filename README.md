@@ -99,6 +99,7 @@ Subcommands:
 	bib [OPTION...] QUERY	Adds or removes records from the bibliography files identified by QUERY. If addition/deletion options are not supplied, print bibliographic data instead.
 	import 	Consumes files in inbox and generates appropriate archival copies, analysis extracts, and metadata containers. Automatically adds both a title and a filename field to the bibliography, both corresponding to the original filename.
 	init 	Generates a new directory structure for use by kb in the current directory.
+	key [KEY]	Prints a list of unique key names or, if KEY is supplied, values for that key from the bibliographic database.
 	ls [QUERY]	Prints a TSV of files matching QUERY. If QUERY omitted, list all files.
 	md5 [QUERY]	Prints md5s of files matching QUERY. If QUERY is omitted, print all md5s.
 	open QUERY	Opens the document matching QUERY using xdg-open to select an appropriate application.
@@ -116,3 +117,4 @@ LS_COLUMNS=(title) #Default columns printed by ls.
 - add regex alongside -eq, maybe -re
 - add bib formatter for bibtex output
 - guarantee keywords already exist when adding if specified
+- sort order has some issues in org subcommand

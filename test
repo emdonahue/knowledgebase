@@ -79,6 +79,7 @@ mv .config-old .config
 #org
 assert 'org' "$(EDITOR=echo $KB org title -eq a)" "$(echo "org/$AMD5.org")"
 assert 'org redundant query' "$(EDITOR=echo $KB org -i title -eq a)" "$(echo "org/$AMD5.org")"
+assert 'org no matches' "$(EDITOR=echo $KB org title -eq z 2>/dev/null)" "$(echo "")"
 
 #bib
 $KB bib -d import -d import2 title -eq a
@@ -100,6 +101,8 @@ $KB bib -s title=b title -eq a
 assert 'bib -s title=b' "$(cat bib/$AMD5)" "$(echo 'title\tb')"
 $KB bib -k title=b title -eq b
 assert 'bib -s title=b' "$(cat bib/$AMD5)" "$(echo 'title\tb')"
+assert 'key' "$($KB key)" "$(echo 'filename\nimport\nimport2\ntitle')"
+assert 'key' "$($KB key title)" "$(echo 'b\nc')"
 
 [[ -z "$ERR" ]] && echo "All Tests Pass"
 exit "$ERR"

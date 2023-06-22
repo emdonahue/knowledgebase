@@ -7,7 +7,7 @@
 #TODO add regex alongside -eq, maybe -re
 #TODO add bib formatter for bibtex output
 #TODO guarantee keywords already exist when adding if specified
-#TODO make bib break if fields dont have "="
+#TODO sort order has some issues in org subcommand
 
 set -o errexit
 set -o pipefail
@@ -25,7 +25,7 @@ local E=(-e)
 function disambiguate() { # Accepts md5s or filenames based on md5s and presents a formatted select, returning a single md5
     local MD5S=("${(@f)$(</dev/stdin)}")
     local PS3='Type a number to disambiguate: '
-    if [[ ! $MD5S ]]; then echo "kb: No files matching query" >&2 && exit 1; fi
+    [[ ! $MD5S ]] && exit 1
     [[ $#MD5S == 1 ]] && echo "$MD5S" && return
     select MD5 in "${(@f)$(printf '%s\n' "$MD5S[@]" | "$SCRIPT" ls "$@" -a)}"; do
 	[[ $REPLY -le $#MD5S ]] && echo "$MD5S[$REPLY]" && break
@@ -124,6 +124,14 @@ case "$CMD" in
 	fi
 	;;
 
+    key) #[KEY]; Prints a list of unique key names or, if KEY is supplied, values for that key from the bibliographic database.
+	if [[ $1 ]]; then
+	    grep "^$1"$'\t' bib/* | cut -f2 | sort -u
+	else
+	    cut -f1 bib/* | sort -u
+	fi
+	;;
+    
     ls) #[QUERY]; Prints a TSV of files matching QUERY. If QUERY omitted, list all files.
 	zparseopts -D -E -K c+:=LS_COLUMNS ${c#BIBkEY; Adds a bibliography key as a column in the output. Default is title. Adding new keys with -c will overwrite the defaults, but -c may be called multiple times. Special column name "md5" prints the md5 of the file.}\
 		   h=HEADERS ${c#; Prints column headers.}
@@ -137,17 +145,15 @@ case "$CMD" in
 	declare -A SORTDIR SORTTIMESTAMP
 	local SORTDIR=([o]=md5 [i]=md5 [n]=org)
 	local SORTTIMESTAMP=([o]=A [i]=T [n]=T)
-	query ${=${${:--q $1}:/-q -a/-a}:/-q -b/-b} "$@[2,-1]" | {[[ $INTERACTIVE ]] && disambiguate "$SORT[@]" "$REVERSE[@]" || if [[ $SORT ]]; then join - <(find $SORTDIR[$SORT[2]] -type f -printf '%P %'$SORTTIMESTAMP[$SORT[2]]'@\n' | sed 's/\.[^ ]* / /' | sort -k1,1) | sort $REVERSE -nk2,2 | cut -f1 -d' '; else cat; fi}
+	query ${=${${:--q $1}:/-q -a/-a}:/-q -b/-b} "$@[2,-1]" | if [[ $SORT ]]; then join - <(find $SORTDIR[$SORT[2]] -type f -printf '%P %'$SORTTIMESTAMP[$SORT[2]]'@\n' | sed 's/\.[^ ]* / /' | sort -k1,1) | sort $REVERSE -nk2,2 | cut -f1 -d' '; else cat; fi | if [[ $INTERACTIVE ]]; then disambiguate; else cat; fi
 	;;
 
     open) #QUERY; Opens the document matching QUERY using xdg-open to select an appropriate application.
-	OPENFILE=$("$SCRIPT" md5 -rso -i "$@")
-	[[ $OPENFILE ]] && xdg-open md5/"$OPENFILE".*	
+	xdg-open md5/${"$("$SCRIPT" md5 -rso -i "$@")":?No file matching query}.*	
 	;;
     
     org) #QUERY; Opens the org notes file for the document matching QUERY using $EDITOR.
-	local ORGFILE=$("$SCRIPT" md5 -rsn -i "$@" | md52file org org)
-	[[ $ORGFILE ]] && ${=EDITOR} $ORGFILE
+	${=EDITOR} ${"$("$SCRIPT" md5 -rsn -i "$@" | md52file org org)":?No file matching query}
 	;;
     
     *)	
