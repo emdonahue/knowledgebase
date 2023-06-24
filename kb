@@ -9,7 +9,6 @@
 #TODO guarantee keywords already exist when adding if specified
 #TODO sort order has some issues in org subcommand
 
-set -o errexit
 set -o pipefail
 if [[ "${TRACE-0}" == "1" ]]; then set -o xtrace; fi
 
@@ -71,8 +70,7 @@ case "$CMD" in
 	for f in "${DIRS[@]}"; do
 	    [[ -d "$f" && -f .config ]] || {echo 'kb directory structure not detected. Use "kb init" to create a new directory structure.' >&2; exit 1}
 	done
-	! find md5 bib org -type f -printf '%p\n' | grep -Ev '^(md5|bib|org)/[a-z0-9]{32}([.]|$)' | sed 's/.*/Warning - Invalid filename detected: &/' >&2
-	[[ $? == 1 ]] && exit
+	find md5 bib org -type f -printf '%p\n' | grep -Ev '^(md5|bib|org)/[a-z0-9]{32}([.]|$)' | sed 's/.*/Warning - Invalid filename detected: &/' >&2 && exit
 	source .config
 	;;
 esac
