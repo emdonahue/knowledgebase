@@ -118,3 +118,4 @@ LS_COLUMNS=(title) #Default columns printed by ls.
 - add bib formatter for bibtex output
 - guarantee keywords already exist when adding if specified
 - sort order has some issues in org subcommand
+- base disambiguation columns on default LS_COLUMNS

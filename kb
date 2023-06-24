@@ -22,20 +22,8 @@ local DIRS=(inbox md5 text bib org)
 local SCRIPT="$0"
 local E=(-e)
 
-function disambiguate() { # Accepts md5s or filenames based on md5s and presents a formatted select, returning a single md5
-    local MD5S=("${(@f)$(</dev/stdin)}")
-    local PS3='Type a number to disambiguate: '
-    [[ ! $MD5S ]] && exit 1
-    [[ $#MD5S == 1 ]] && echo "$MD5S" && return
-    select MD5 in "${(@f)$(printf '%s\n' "$MD5S[@]" | "$SCRIPT" ls "$@" -a)}"; do
-	[[ $REPLY -le $#MD5S ]] && echo "$MD5S[$REPLY]" && break
-    done < /dev/tty
-}
-
-function disambiguate2() {
-    echo "disambiguating"
-    "$SCRIPT" ls -a | fzf
-
+function disambiguate() { 
+    "$SCRIPT" ls -c title -c md5 -a | fzf -n1 -d'\t' | awk '{print $NF}' #TODO base disambiguation columns on default LS_COLUMNS
 }
 
 function file2md5() { sed -E 's_^(.*/)*([[:alnum:]]+)(\..*)?$_\2_' }
@@ -141,26 +129,20 @@ case "$CMD" in
     ls) #[QUERY]; Prints a TSV of files matching QUERY. If QUERY omitted, list all files.
 	zparseopts -D -E -K c+:=LS_COLUMNS ${c#BIBKEY; Adds a bibliography key as a column in the output. Default is title. Adding new keys with -c will overwrite the defaults, but -c may be called multiple times. Special column name "md5" prints the md5 of the file.}\
 		   h=HEADERS ${c#; Prints column headers.}\
-		   s:=SORT #Hidden internal sort option.
-	"$SCRIPT" md5 "$@" | join - <(find ${SORT[2]:-md5} -type f -printf '%P %A@\n' | sed 's/\.[^ ]* / /' | sort -k1,1) | sort -nr -k2,2 #| md52file bib | xargs awk -vFS='\t' -vOFS='\t' -vLS_COLUMNS=${(j:\t:)LS_COLUMNS:#-c} -vHEADERS=$#HEADERS 'BEGIN {if (HEADERS) print LS_COLUMNS; split(LS_COLUMNS,hs,"\t")} {keys[$1]=$2} ENDFILE {keys["md5"]=substr(FILENAME,index(FILENAME,"/")+1); for (i=1;i<=length(hs);i++) printf("%s%s",keys[hs[i]],i==length(hs)?RS:FS); delete keys}'
+		   s:=SORT #Hidden internal sort option. Name of directory to base sort order on access time of.
+	"$SCRIPT" md5 "$@" | join - <(find ${SORT[2]:-md5} -type f -printf '%P %A@\n' | sed 's/\.[^ ]* / /' | sort -k1,1) | sort -nr -k2,2 | cut -f1 -d' ' | md52file bib | xargs awk -vFS='\t' -vOFS='\t' -vLS_COLUMNS=${(j:\t:)LS_COLUMNS:#-c} -vHEADERS=$#HEADERS 'BEGIN {if (HEADERS) print LS_COLUMNS; split(LS_COLUMNS,hs,"\t")} {keys[$1]=$2} ENDFILE {keys["md5"]=substr(FILENAME,index(FILENAME,"/")+1); for (i=1;i<=length(hs);i++) printf("%s%s",keys[hs[i]],i==length(hs)?RS:FS); delete keys}'
 	;;
 
     md5) #[QUERY]; Prints md5s of files matching QUERY. If QUERY is omitted, print all md5s.
-	zparseopts -D -E i=INTERACTIVE\
-		   s:=SORT ${c#ORDER; Sorts elements by timestamp. SORT may be any of: i (time imported), o (time opened), n (time notes opened). Because the -a and -o query flags rely on order, do not sort any but the last in a series of joined queries.}\
-		   r=REVERSE ${c#; Reverses sort order}
-	declare -A SORTDIR SORTTIMESTAMP
-	local SORTDIR=([o]=md5 [i]=md5 [n]=org)
-	local SORTTIMESTAMP=([o]=A [i]=T [n]=T)
-	query ${=${:--q $1}:/-q -a/-a} "$@[2,-1]" | if [[ $SORT ]]; then join - <(find $SORTDIR[$SORT[2]] -type f -printf '%P %'$SORTTIMESTAMP[$SORT[2]]'@\n' | sed 's/\.[^ ]* / /' | sort -k1,1) | sort $REVERSE -nk2,2 | cut -f1 -d' '; else cat; fi | if [[ $INTERACTIVE ]]; then disambiguate2; else cat; fi
+	query ${=${:--q $1}:/-q -a/-a} "$@[2,-1]"
 	;;
 
     open) #QUERY; Opens the document matching QUERY using xdg-open to select an appropriate application.
-	xdg-open md5/${"$("$SCRIPT" md5 -rso -i "$@")":?No file matching query}.*	
+	xdg-open md5/${"$("$SCRIPT" md5 "$@" | disambiguate)":?No file matching query}.*	
 	;;
     
     org) #QUERY; Opens the org notes file for the document matching QUERY using $EDITOR.
-	${=EDITOR} ${"$("$SCRIPT" md5 -rsn -i "$@" | md52file org org)":?No file matching query}
+	${=EDITOR} ${"$("$SCRIPT" md5 "$@" | disambiguate org | md52file org org)":?No file matching query}
 	;;
     
     *)	
