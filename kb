@@ -27,7 +27,7 @@ function disambiguate() {
     if [[ $#MD5S -le 1 ]]; then
 	echo $MD5S
     else
-	printf '%s\n' "${MD5S[@]}" | "$SCRIPT" ls -c title -c md5 -a | fzf -n1 -d'\t' | awk '{print $NF}' #TODO base disambiguation columns on default LS_COLUMNS
+	printf '%s\n' "${MD5S[@]}" | "$SCRIPT" ls -s "$1" -c title -c md5 -a | fzf -n1 -d'\t' | awk '{print $NF}' #TODO base disambiguation columns on default LS_COLUMNS
     fi
 }
 
@@ -71,6 +71,8 @@ case "$CMD" in
 	for f in "${DIRS[@]}"; do
 	    [[ -d "$f" && -f .config ]] || {echo 'kb directory structure not detected. Use "kb init" to create a new directory structure.' >&2; exit 1}
 	done
+	! find md5 bib org -type f -printf '%p\n' | grep -Ev '^(md5|bib|org)/[a-z0-9]{32}([.]|$)' | sed 's/.*/Warning - Invalid filename detected: &/' >&2
+	[[ $? == 1 ]] && exit
 	source .config
 	;;
 esac
