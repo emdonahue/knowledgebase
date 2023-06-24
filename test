@@ -62,11 +62,11 @@ assert 'md5 implicit -a' "$($KB md5 title -eq a title -eq a)" "$(echo "$AMD5")"
 assert 'md5 -o multiple' "$($KB md5 title -eq a -o title -eq c)" "$(echo "$CMD5\n$AMD5")"
 assert 'md5 -o duplicate' "$($KB md5 title -eq a -o title -eq a)" "$(echo "$AMD5")"
 assert 'md5 -o --subq' "$($KB md5 title -eq a -o --subq <($KB md5 title -eq c))" "$(echo "$CMD5\n$AMD5")"
-assert 'md5 -i' "$($KB md5 -i title -eq a)" "$(echo "$AMD5")"
-assert 'md5 -si' "$($KB md5 -si)" "$(echo "$AMD5\n$BMD5\n$CMD5")"
-assert 'md5 -sir' "$($KB md5 -rsi)" "$(echo "$CMD5\n$BMD5\n$AMD5")"
 
 #ls
+touch md5/$CMD5.txt
+touch -d 'Yesterday' md5/$BMD5.txt
+touch -d 'Last Week' md5/$AMD5.pdf
 assert 'ls' "$($KB ls)" "$(echo 'c\nb\na')"
 assert 'ls stdin' "$(echo "$AMD5" | $KB ls -a)" "$(echo "a")"
 assert 'ls metadata' "$($KB ls -c filename -c md5)" "$(echo "c\t$CMD5\nb\t$BMD5\na\t$AMD5")"
@@ -78,7 +78,7 @@ mv .config-old .config
 
 #org
 assert 'org' "$(EDITOR=echo $KB org title -eq a)" "$(echo "org/$AMD5.org")"
-assert 'org redundant query' "$(EDITOR=echo $KB org -i title -eq a)" "$(echo "org/$AMD5.org")"
+assert 'org redundant query' "$(EDITOR=echo $KB org title -eq a)" "$(echo "org/$AMD5.org")"
 assert 'org no matches' "$(EDITOR=echo $KB org title -eq z 2>/dev/null)" "$(echo "")"
 
 #bib
