@@ -8,6 +8,7 @@
 #TODO add bib formatter for bibtex output
 #TODO guarantee keywords already exist when adding if specified
 #TODO sort order has some issues in org subcommand
+#TODO make sure that if bib data is malformed on import the import doesnt happen
 
 set -o pipefail
 if [[ "${TRACE-0}" == "1" ]]; then set -o xtrace; fi
@@ -26,7 +27,7 @@ function disambiguate() {
     if [[ $#MD5S -le 1 ]]; then
 	echo $MD5S
     else
-	printf '%s\n' "${MD5S[@]}" | "$SCRIPT" ls -s "$1" -c title -c md5 -a | fzf -n1 -d'\t' | awk '{print $NF}' #TODO base disambiguation columns on default LS_COLUMNS
+	printf '%s\n' "${MD5S[@]}" | "$SCRIPT" ls -s "$1" -c title -c md5 -a | fzf -n1 -d'\t' "$2" | awk '{print $NF}' #TODO base disambiguation columns on default LS_COLUMNS
     fi
 }
 
@@ -82,7 +83,7 @@ case "$CMD" in
 	sed -nE '/\s*'"$1"'\)\s#/'"${1:+,/^\s*;;\s*$/}"'{s/^[[:space:]]*([-|[:alnum:]]+)\)\s#([^;]*); (.*)/'"${${1-\t}:#$1}"'\1 \2\t\3/p; s/.*(\w+)[-+:]*=\w+ \$\{c#(.*); (.*)\}.*/\t-\1 \2\t\3/p}' "$SCRIPT"
 	;;
 
-    bib) #[OPTION...] QUERY; Adds or removes records from the bibliography files identified by QUERY. If addition/deletion options are not supplied, print bibliographic data instead.
+    bib) #[OPTION...] [QUERY]; Adds or removes records from the bibliography files identified by QUERY. If addition/deletion options are not supplied, print bibliographic data instead.
 	zparseopts -D -E d+:=DELETIONS ${c#KEY[=VALUE]; Deletes all fields matching KEY from the bibliography files matching QUERY. If VALUE is provided, only delete fields both matching KEY and conatining VALUE. Can be supplied multiple times for different KEYS and VALUES.}\
 		   k+:=INSERTIONS ${c#KEY=VALUE; Inserts VALUE under KEY in bibliography files matching QUERY. To overwrite previous entries, use -s. Can be supplied multiple times for different KEYS and VALUES}\
 		   s+:=UPDATES ${c#KEY=VALUE; Combines -d and -k to delete all previous values for KEY and set KEY to VALUE.}
@@ -90,8 +91,8 @@ case "$CMD" in
 	INSERTIONS=(${INSERTIONS:#-k} ${UPDATES:#-s})
 	for ins in "$INSERTIONS[@]"; do [[ ! "$ins" =~ '=' ]] && echo "kb: malformed bibliographic update: $ins" >&2 && exit 1; done
 	DELETIONS=(${DELETIONS:+$(echo '/'${(j:|:)${(@f)$(printf '%s\n' ${${DELETIONS:#-d}/=/$'\t'} | sed -E 's/[^^]/[&]/g;s/\^/\\^/g;s/\t\]/\\\\t].*/;s/^/\^/')}}'/d')})
-	INSERTIONS=('1 i '${^${INSERTIONS}/=/$'\t'})	
-	"$SCRIPT" md5 "$@" | md52file bib | if [[ $INSERTIONS$DELETIONS ]]; then
+	INSERTIONS=('1 i '${^${INSERTIONS}/=/$'\t'})
+	"$SCRIPT" md5 "$@" | if  [[ "$@" ]]; then cat; else disambiguate '' '-m'; fi | md52file bib | if [[ $INSERTIONS$DELETIONS ]]; then
 	    while read bib; do
 		sed -Ei ${INSERTIONS:+${E:^^INSERTIONS}} ${E:^DELETIONS} "$bib"
 		sort -uo "$bib" "$bib"
